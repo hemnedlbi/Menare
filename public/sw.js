@@ -1,4 +1,4 @@
-const CACHE="menare-v5";
+const CACHE="menare-v6";
 const FILES=["./","index.html","manifest.webmanifest","fonts/SarkarAljazeera-Regular.woff2","fonts/SarkarAljazeera-Bold.woff2","fonts/Amiri-Regular.woff2","fonts/Amiri-Bold.woff2",
  "icons/icon-192.png","icons/icon-512.png","icons/maskable-512.png","icons/apple-touch-icon.png"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()));});
