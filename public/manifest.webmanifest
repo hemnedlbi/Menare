@@ -1,0 +1,31 @@
+{
+ "name": "مەنارە - کاتەکانی نوێژی کوردستان",
+ "short_name": "مەنارە",
+ "description": "کاتەکانی نوێژ و بانگ بۆ شارەکانی کوردستان",
+ "lang": "ckb",
+ "dir": "rtl",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "portrait",
+ "background_color": "#102A55",
+ "theme_color": "#102A55",
+ "icons": [
+  {
+   "src": "icons/icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icons/icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  },
+  {
+   "src": "icons/maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  }
+ ]
+}
