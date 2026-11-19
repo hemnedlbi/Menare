@@ -171,6 +171,11 @@ footer{color:var(--muted);font-size:.78rem;text-align:center;direction:ltr;paddi
 .dcard .dct{flex:1;display:flex;flex-direction:column}
 .dcard b{font-size:1.05rem}
 .dcard span.s{font-size:.82rem;color:var(--muted)}
+.adhan-box{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px 16px}
+.adhan-box .ab-t{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.adhan-box #adhanSt{font-size:.82rem;color:var(--muted)}
+.adhan-box .btn{background:var(--chip);color:var(--accent);font-weight:700;border:0}
+.adhan-box[hidden]{display:none}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 @media (max-width:360px){.hero .content{padding-inline-end:112px}.hname{font-size:2.5rem}.cd{font-size:1.9rem}}
 </style>
@@ -203,6 +208,10 @@ footer{color:var(--muted);font-size:.78rem;text-align:center;direction:ltr;paddi
     <h2>کاتەکانی ئەمڕۆ</h2>
     <div class="srcchip" id="tSrc"></div>
     <ul class="plist" id="todayList"></ul>
+    <div class="adhan-box" id="adhanBox" hidden>
+      <div class="ab-t"><b>بانگ لەسەر ئایفۆن</b><span id="adhanSt">…</span></div>
+      <button class="btn" id="adhanTest" type="button">تاقیکردنەوەی بانگ (دوای ١٠ چرکە)</button>
+    </div>
     <button class="dcard" id="dShort" type="button"><span class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4.5" r="1.6"/><circle cx="17.3" cy="6.7" r="1.6"/><circle cx="19.5" cy="12" r="1.6"/><circle cx="17.3" cy="17.3" r="1.6"/><circle cx="6.7" cy="6.7" r="1.6"/><circle cx="4.5" cy="12" r="1.6"/><circle cx="6.7" cy="17.3" r="1.6"/><path d="M12 19v3"/></svg></span><span class="dct"><b id="dShortT"></b><span class="s" id="dShortS"></span></span></button>
   </section>
 
@@ -356,7 +365,7 @@ el("mPrev").addEventListener("click",function(){mM--;if(mM<1){mM=12;mY--}renderM
 el("mNext").addEventListener("click",function(){mM++;if(mM>12){mM=1;mY++}renderMonth();});
 
 el("todayList").addEventListener("click",function(e){var b=e.target.closest(".bell");if(!b)return;var k=b.getAttribute("data-k");
-  bells[k]=!bells[k];save("pt-bells",bells);renderToday();});
+  bells[k]=!bells[k];save("pt-bells",bells);renderToday();scheduleAdhan();});
 el("cityList").addEventListener("click",function(e){var b=e.target.closest("button[data-i]");if(!b)return;cityIdx=+b.getAttribute("data-i");sel.value=cityIdx;
   save("pt-city-name",CITIES[cityIdx][0]);renderAll();setTab("today");window.scrollTo(0,0);});
 
@@ -452,6 +461,47 @@ el("qGps").addEventListener("click",function(){var b=this;if(!navigator.geolocat
     function(){b.disabled=false;b.textContent="شوێنی ئێستام بەکاربهێنە";el("qState").textContent="شوێنەکەت نەدۆزرایەوە، شاری هەڵبژێردراو بەکاردێت.";},{enableHighAccuracy:true,timeout:10000});});
 function qShow(){qRender();}
 function renderAll(){lastKey="";if(!qPos&&view==="qibla")qRender();renderToday();renderMonth();renderShort();tick();}
+/* ---- iPhone app (Capacitor): adhan as scheduled system notifications ---- */
+var CAPN=window.Capacitor,NATIVE=!!(CAPN&&CAPN.isNativePlatform&&CAPN.isNativePlatform()&&CAPN.nativePromise);
+function LN(m,o){return CAPN.nativePromise("LocalNotifications",m,o||{});}
+var schedT=null;
+function scheduleAdhan(){if(!NATIVE)return;clearTimeout(schedT);schedT=setTimeout(doSchedule,700);}
+function adhanPerm(){return LN("checkPermissions").then(function(p){return p.display==="granted"?p:LN("requestPermissions");}).then(function(p){return p.display==="granted";});}
+function ampm(min){min=fix(min,1440);return min<720?"پ.ن":"د.ن";}
+function doSchedule(){
+  adhanPerm().then(function(ok){
+    if(!ok){el("adhanSt").textContent="ڕێگە بە Notifications نەدراوە — لە Settings چالاکی بکە";return;}
+    return LN("getPending").then(function(r){
+      var ids=(r.notifications||[]).map(function(x){return{id:x.id};});
+      return ids.length?LN("cancel",{notifications:ids}):null;
+    }).then(function(){
+      var c=CITIES[cityIdx],n=kNow(),list=[],nowT=Date.now(),id=1,last=0;
+      for(var k=0;k<13;k++){
+        var dt=new Date(Date.UTC(n.y,n.m-1,n.d+k)),y=dt.getUTCFullYear(),m=dt.getUTCMonth()+1,d=dt.getUTCDate(),t=times(y,m,d,c);
+        TKEYS.forEach(function(key){
+          if(!bells[key]||list.length>=58)return;
+          var at=Date.UTC(y,m-1,d)+t[key]*60000-TZ*3600e3;if(at<nowT+3000)return;
+          list.push({id:id++,title:"🕌 کاتی بانگی "+NAMES[key],body:c[0]+" · "+fmt(t[key],true)+" "+ampm(t[key]),sound:"adhan.wav",schedule:{at:new Date(at)}});last=at;});
+      }
+      if(last)list.push({id:id++,title:"مەنارە",body:"ئەپەکە بکەرەوە بۆ ئەوەی کاتەکانی بانگ نوێ بکرێنەوە",schedule:{at:new Date(last+120000)}});
+      if(!list.length){el("adhanSt").textContent="هیچ بانگێک هەڵنەبژێردراوە";return;}
+      return LN("schedule",{notifications:list}).then(function(){el("adhanSt").textContent="✓ "+(list.length-1)+" بانگ ڕێکخراوە · "+c[0];});
+    });
+  }).catch(function(e){el("adhanSt").textContent="هەڵە: "+((e&&e.message)||e);});
+}
+if(NATIVE){
+  document.documentElement.classList.add("native");
+  el("adhanBox").hidden=false;
+  el("adhanTest").addEventListener("click",function(){
+    adhanPerm().then(function(ok){
+      if(!ok){el("adhanSt").textContent="ڕێگە بە Notifications نەدراوە — لە Settings چالاکی بکە";return;}
+      return LN("schedule",{notifications:[{id:9000,title:"🕌 تاقیکردنەوەی بانگ",body:CITIES[cityIdx][0]+" · ئەمە تەنها تاقیکردنەوەیە",sound:"adhan.wav",schedule:{at:new Date(Date.now()+10000)}}]})
+        .then(function(){el("adhanSt").textContent="ئێستا مۆبایلەکە قفڵ بکە، دوای ١٠ چرکە بانگ دێت";});
+    }).catch(function(e){el("adhanSt").textContent="هەڵە: "+((e&&e.message)||e);});
+  });
+  document.addEventListener("resume",scheduleAdhan);
+  var _renderAll=renderAll;renderAll=function(){_renderAll();scheduleAdhan();};
+}
 renderCities();setTab(view);renderAll();setInterval(tick,1000);
 })();
 </script>

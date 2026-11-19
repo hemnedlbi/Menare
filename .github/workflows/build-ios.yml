@@ -1,0 +1,68 @@
+name: Build Menare iOS app (AltStore)
+
+on:
+  push:
+    branches: [main]
+    paths: ['ios-app/**', '.github/workflows/build-ios.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ios:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: ios-app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use newest stable Xcode
+        run: |
+          XC=$(ls -d /Applications/Xcode_*.app | grep -viE 'beta|rc' | sort -V | tail -1)
+          echo "Using $XC"
+          sudo xcode-select -s "$XC"
+          xcodebuild -version
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install packages
+        run: npm ci || npm install
+
+      - name: Sync Capacitor
+        run: npx cap sync ios
+
+      - name: Build (unsigned — AltStore signs it with your Apple ID)
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj -scheme App \
+            -configuration Release -sdk iphoneos \
+            -destination 'generic/platform=iOS' \
+            -derivedDataPath build \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }} \
+            build | tail -40
+          test -d build/Build/Products/Release-iphoneos/App.app
+
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -R build/Build/Products/Release-iphoneos/App.app Payload/
+          zip -qry Menare.ipa Payload
+          ls -la Menare.ipa
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Menare-ipa
+          path: ios-app/Menare.ipa
+
+      - name: Publish as release "latest"
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete ios-latest -y --cleanup-tag || true
+          gh release create ios-latest Menare.ipa \
+            --title "Menare iOS — build ${{ github.run_number }}" \
+            --notes "Unsigned IPA. Install with AltStore or SideStore. Design & Development Hemn A.Muhammad"
