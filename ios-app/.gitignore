@@ -2,6 +2,5 @@ node_modules/
 build/
 Payload/
 *.ipa
-# www is copied from ../public at build time (npm run copy-web); only the adhan sound lives here
-www/*
-!www/adhan.wav
+# www is copied from ../public at build time (npm run copy-web)
+www/

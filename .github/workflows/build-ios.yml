@@ -35,7 +35,7 @@ jobs:
       - name: Put the whole web app inside the iPhone app (works offline)
         run: |
           npm run copy-web
-          test -f www/index.html && test -f www/adhan.wav
+          test -f www/index.html
           ls www
 
       - name: Sync Capacitor
@@ -51,8 +51,7 @@ jobs:
             CURRENT_PROJECT_VERSION=${{ github.run_number }} \
             build | tail -40
           test -d build/Build/Products/Release-iphoneos/App.app
-          # notification sounds must sit at the root of the app bundle
-          cp www/adhan.wav build/Build/Products/Release-iphoneos/App.app/adhan.wav
+          test -f build/Build/Products/Release-iphoneos/App.app/adhan.wav
           test -f build/Build/Products/Release-iphoneos/App.app/public/index.html
 
       - name: Package IPA

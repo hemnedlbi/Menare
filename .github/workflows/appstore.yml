@@ -1,0 +1,96 @@
+name: Upload Menare to App Store Connect (TestFlight)
+
+# Run it by hand: GitHub → Actions → this workflow → "Run workflow".
+# Needs three repository secrets (Settings → Secrets and variables → Actions):
+#   ASC_KEY_ID     – Key ID of the App Store Connect API key (role: Admin)
+#   ASC_ISSUER_ID  – Issuer ID shown above the keys list
+#   ASC_KEY_P8     – the whole text of the downloaded AuthKey_XXXX.p8 file
+# Apple then creates the distribution certificate and provisioning profile itself.
+# Design & Development Hemn A.Muhammad
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "App version shown on the App Store"
+        default: "1.0"
+        required: true
+
+jobs:
+  appstore:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: ios-app
+    env:
+      ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+      ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check the secrets
+        run: |
+          test -n "$ASC_KEY_ID" || { echo "::error::Secret ASC_KEY_ID is missing"; exit 1; }
+          test -n "$ASC_ISSUER_ID" || { echo "::error::Secret ASC_ISSUER_ID is missing"; exit 1; }
+          test -n "${{ secrets.ASC_KEY_P8 }}" || { echo "::error::Secret ASC_KEY_P8 is missing"; exit 1; }
+
+      - name: Use newest stable Xcode
+        run: |
+          XC=$(ls -d /Applications/Xcode_*.app | grep -viE 'beta|rc' | sort -V | tail -1)
+          echo "Using $XC"
+          sudo xcode-select -s "$XC"
+          xcodebuild -version
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install packages
+        run: npm ci || npm install
+
+      - name: Put the whole web app inside the iPhone app (works offline)
+        run: |
+          npm run copy-web
+          test -f www/index.html
+
+      - name: Sync Capacitor
+        run: npx cap sync ios
+
+      - name: API key file
+        env:
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/keys"
+          printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/keys/AuthKey_$ASC_KEY_ID.p8"
+
+      - name: Archive (signed automatically by Apple)
+        run: |
+          xcodebuild -project ios/App/App.xcodeproj -scheme App \
+            -configuration Release -destination 'generic/platform=iOS' \
+            -archivePath build/Menare.xcarchive \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/keys/AuthKey_$ASC_KEY_ID.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            DEVELOPMENT_TEAM=GG84JU45K5 CODE_SIGN_STYLE=Automatic \
+            CODE_SIGN_IDENTITY="Apple Development" \
+            MARKETING_VERSION=${{ inputs.version }} \
+            CURRENT_PROJECT_VERSION=${{ github.run_number }} \
+            archive | tail -60
+          test -d build/Menare.xcarchive
+
+      - name: Upload to App Store Connect
+        run: |
+          xcodebuild -exportArchive \
+            -archivePath build/Menare.xcarchive \
+            -exportOptionsPlist ExportOptions.plist \
+            -exportPath build/export \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$RUNNER_TEMP/keys/AuthKey_$ASC_KEY_ID.p8" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+          echo "Uploaded build ${{ inputs.version }} (${{ github.run_number }}). It shows in App Store Connect → TestFlight after Apple processes it (5–30 min)."
+
+      - name: Remove key
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/keys"
