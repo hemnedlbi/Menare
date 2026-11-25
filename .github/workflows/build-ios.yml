@@ -3,7 +3,7 @@ name: Build Menare iOS app (AltStore)
 on:
   push:
     branches: [main]
-    paths: ['ios-app/**', '.github/workflows/build-ios.yml']
+    paths: ['ios-app/**', 'public/**', '.github/workflows/build-ios.yml']
   workflow_dispatch:
 
 permissions:
@@ -32,6 +32,12 @@ jobs:
       - name: Install packages
         run: npm ci || npm install
 
+      - name: Put the whole web app inside the iPhone app (works offline)
+        run: |
+          npm run copy-web
+          test -f www/index.html && test -f www/adhan.wav
+          ls www
+
       - name: Sync Capacitor
         run: npx cap sync ios
 
@@ -45,6 +51,9 @@ jobs:
             CURRENT_PROJECT_VERSION=${{ github.run_number }} \
             build | tail -40
           test -d build/Build/Products/Release-iphoneos/App.app
+          # notification sounds must sit at the root of the app bundle
+          cp www/adhan.wav build/Build/Products/Release-iphoneos/App.app/adhan.wav
+          test -f build/Build/Products/Release-iphoneos/App.app/public/index.html
 
       - name: Package IPA
         run: |

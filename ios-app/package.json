@@ -1,9 +1,10 @@
 {
   "name": "menare-ios",
   "version": "1.0.0",
-  "description": "Menare prayer times — iOS wrapper for menare.mandacafe.com. Design & Development Hemn A.Muhammad",
+  "description": "Menare prayer times — iOS app (works offline; only the mosque map needs internet). Design & Development Hemn A.Muhammad",
   "scripts": {
-    "sync": "cap sync ios"
+    "copy-web": "node -e \"const fs=require('fs');fs.cpSync('../public','www',{recursive:true});for(const f of ['_headers','sw.js','offline.html'])fs.rmSync('www/'+f,{force:true})\"",
+    "sync": "npm run copy-web && cap sync ios"
   },
   "author": "Hemn A.Muhammad",
   "license": "UNLICENSED",

@@ -2,17 +2,17 @@
   "appId": "com.mandacafe.menare",
   "appName": "منارە",
   "webDir": "www",
-  "server": {
-    "url": "https://menare.mandacafe.com/?app=ios",
-    "errorPath": "offline.html"
-  },
   "ios": {
     "contentInset": "never",
     "backgroundColor": "#102A55"
   },
   "plugins": {
     "LocalNotifications": {
-      "presentationOptions": ["banner", "sound", "list"]
+      "presentationOptions": [
+        "banner",
+        "sound",
+        "list"
+      ]
     }
   }
 }

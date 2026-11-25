@@ -2,7 +2,8 @@
 <html lang="ckb" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<script>try{var _l=JSON.parse(localStorage.getItem("pt-lang")||'"ckb"');if(_l==="ar"||_l==="en"){document.documentElement.lang=_l;document.documentElement.dir=_l==="en"?"ltr":"rtl";}}catch(e){}</script>
 <title>منارە - کاتەکانی نوێژی کوردستان</title>
 <meta name="description" content="کاتەکانی نوێژ و بانگ بۆ شارەکانی کوردستان">
 <meta name="theme-color" content="#102A55">
@@ -204,6 +205,17 @@ display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px
 .adhan-box #adhanSt{font-size:.82rem;color:var(--muted)}
 .adhan-box .btn{background:var(--chip);color:var(--accent);font-weight:700;border:0}
 .adhan-box[hidden]{display:none}
+/* no double-tap zoom (iPhone) */
+html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}
+button,a,select,input,label{touch-action:manipulation}
+.langsel{margin-inline-start:auto;align-self:flex-start;appearance:none;-webkit-appearance:none;background:var(--chip);color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:6px 14px;min-height:38px;font-size:.85rem;cursor:pointer}
+[dir=ltr] .city select{padding:7px 16px 7px 38px}
+[dir=ltr] .cd{text-align:left}
+[dir=ltr] .bar span,[dir=ltr] .dbar span{margin-inline-start:0}
+[dir=ltr] .hero .scene{transform:scaleX(-1)}
+[dir=ltr] .mpop{text-align:left;direction:ltr}
+[dir=ltr] .plist li{padding:10px 12px 10px 10px}
+[dir=ltr] .dbtn{padding:6px 16px 6px 8px}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 @media (max-width:360px){.hero .content{padding-inline-end:112px}.hname{font-size:2.5rem}.cd{font-size:1.9rem}}
 </style>
@@ -215,6 +227,7 @@ display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px
       <h1>منارە</h1>
       <p class="sub">کاتەکانی نوێژی کوردستان</p>
     </div>
+    <select id="lang" class="langsel" aria-label="Language"><option value="ckb">کوردی</option><option value="ar">العربية</option><option value="en">English</option></select>
   </header>
 
   <section id="p-today" class="today-wrap" style="display:flex;flex-direction:column;gap:18px">
@@ -342,6 +355,24 @@ display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px
 (function(){
 "use strict";
 var TZ=3;
+/* ---- languages: Kurdish (default), Arabic, English ---- */
+var LANG=(function(){try{var v=JSON.parse(localStorage.getItem("pt-lang")||'"ckb"');return (v==="ar"||v==="en")?v:"ckb";}catch(e){return "ckb";}})();
+var I18N={ar:{"منارە":"منارة","کاتەکانی نوێژی کوردستان":"أوقات الصلاة في كوردستان","شار":"المدينة","نوێژی داهاتوو":"الصلاة القادمة","ماوە بۆ بانگ":"المتبقي للأذان","کاتەکانی ئەمڕۆ":"أوقات اليوم","بانگ لەسەر ئایفۆن":"الأذان على الآيفون","تاقیکردنەوەی بانگ (دوای ١٠ چرکە)":"تجربة الأذان (بعد ١٠ ثوانٍ)","بەیانیان":"الصباح","ئێواران":"المساء","دەستپێکردنەوە":"إعادة البدء","سەرچاوە: حیسنولموسلیم. دوگمەی خوارەوەی هەر زیکرێک دابگرە بۆ ژماردن.":"المصدر: حصن المسلم. اضغط الزر أسفل كل ذكر للعدّ.","شارەکان و سەرچاوەی کاتەکان":"المدن ومصادر الأوقات","هەر شارێک یان خشتەی تایبەتی خۆی هەیە، یان خشتەی شارێکی نزیک بەکاردێنێت. ئەو شارانەی نیشانەی «پشکنین نەکراوە»یان هەیە، هێشتا لەگەڵ مزگەوتی ناوخۆ بەراورد نەکراون. ئەگەر کاتێکی هەڵە بینی، ئاگادارم بکەرەوە.":"لكل مدينة جدولها الخاص أو تستخدم جدول مدينة قريبة. المدن التي تحمل علامة «لم يُتحقق منها» لم تُقارن بعد مع المساجد المحلية. إذا رأيت وقتًا خاطئًا فأخبرنا.","باکوور":"الشمال","قیبلەنما بەکاربخە":"تشغيل البوصلة","شوێنی ئێستام بەکاربهێنە":"استخدم موقعي الحالي","مۆبایلەکە بە ڕاستی لەسەر دەستت دابنێ و لە ئامێری ئاسن و موگناتیس دووری بخەرەوە. کاتێک وێنەی کەعبە هاتە ژێر سێگۆشە زەردەکەی سەرەوە، ڕووت لە قیبلەیە. ئەگەر ئاراستەکە جێگیر نەبوو، مۆبایلەکە چەند جارێک بە شێوەی ژمارە ٨ لە هەوادا بجووڵێنە بۆ ڕێکخستنەوەی قیبلەنماکە.":"ضع الهاتف مستويًا على يدك وأبعده عن المعادن والمغناطيس. عندما تصبح الكعبة تحت المثلث الأصفر في الأعلى فأنت متجه إلى القبلة. إذا لم يستقر الاتجاه، حرّك الهاتف في الهواء على شكل الرقم ٨ عدة مرات لمعايرة البوصلة.","مزگەوتەکانی نزیکت":"المساجد القريبة منك","نزیکترین مزگەوت":"أقرب مسجد","ڕێگا":"الطريق","شوێنی ئێستام بدۆزەوە":"حدّد موقعي","لە Google Maps بگەڕێ":"ابحث في Google Maps","نەخشە و ناوی مزگەوتەکان لە OpenStreetMap ـەوەن. لەوانەیە هەندێک مزگەوت هێشتا تۆمار نەکرابن؛ ئەو کاتە «لە Google Maps بگەڕێ» بەکاربهێنە.":"الخريطة وأسماء المساجد من OpenStreetMap. قد لا تكون بعض المساجد مسجلة بعد؛ في هذه الحالة استخدم «ابحث في Google Maps».","ئەمڕۆ":"اليوم","زیکر":"الأذكار","قیبلە":"القبلة","مانگ":"الشهر","شارەکان":"المدن","مزگەوت":"مسجد","کاتی زیکر":"وقت الذكر","مانگی پێشوو":"الشهر السابق","مانگی داهاتوو":"الشهر التالي","نەخشەی مزگەوتەکان":"خريطة المساجد","بەشەکان":"الأقسام","خشتەی تایبەتی خۆی":"جدول خاص بها","خشتەی {c}":"جدول {c}","وەک ئەپە باوەڕپێکراوەکەت":"مطابق لتطبيقك الموثوق","پشکنین نەکراوە":"لم يُتحقق منها","پ.ن":"ص","د.ن":"م","بانگی نییە":"بلا أذان","تێپەڕی":"مضت","ئاگادارکردنەوەی بانگی {p}":"تنبيه أذان {p}","سبەینێ":"غدًا","ڕێکەوت":"التاريخ","کاتەکان":"الأوقات","ڕۆژی {d}ی ڕەمەزان":"اليوم {d} من رمضان","سبەینێ جەژنی ڕەمەزانە (نزیکەی)":"غدًا عيد الفطر (تقريبًا)","ڕەمەزانت پیرۆز بێت · جەژن نزیکەی {n} ڕۆژی ماوە":"رمضان مبارك · العيد بعد {n} يومًا تقريبًا","ڕۆژ بۆ جەژن":"يوم حتى العيد","سبەینێ ڕەمەزانە":"رمضان يبدأ غدًا","مانگی پیرۆزی ڕەمەزان":"شهر رمضان المبارك","یەکەم ڕۆژ نزیکەی {date} · بە پێی بینینی مانگ":"أول يوم تقريبًا {date} · حسب رؤية الهلال","ڕۆژ ماوە":"يوم متبقٍ","زیکرەکانی بەیانیان":"أذكار الصباح","زیکرەکانی ئێواران":"أذكار المساء","هەمووی خوێندرایەوە":"تمت قراءتها كلها","{a} لە {b} خوێندراوە":"قُرئ {a} من {b}","ئایەتی {n}":"الآية {n}","تایبەت بە بەیانیان":"خاص بالصباح","تایبەت بە ئێواران":"خاص بالمساء","تەواو بوو":"تم","ماوە {n} جار":"متبقٍ {n} مرات","{n} جار":"{n} مرات","یەک جار":"مرة واحدة","{a} لە {b} زیکر":"{a} من {b} ذكر","ئایەتولکورسی":"آية الكرسي","سوورەتی ئیخلاس":"سورة الإخلاص","سوورەتی فەلەق":"سورة الفلق","سوورەتی ناس":"سورة الناس","سەیدولئیستیغفار":"سيد الاستغفار","شوێنی ئێستات":"موقعك الحالي","قیبلە {d}° لە باکوورەوە، بە ئاراستەی کاتژمێر":"القبلة {d}° من الشمال باتجاه عقارب الساعة","چاوەڕێی هەستەوەری قیبلەنما...":"بانتظار حساس البوصلة...","ڕووت لە قیبلەیە ✓":"أنت متجه إلى القبلة ✓","بسووڕێوە بەرەو ڕاست {d}°":"استدر إلى اليمين {d}°","بسووڕێوە بەرەو چەپ {d}°":"استدر إلى اليسار {d}°","ئەم ئامێرە هەستەوەری قیبلەنمای نییە. ئاراستەکە بە پێی پلەکانی سەرەوە دیاری بکە.":"لا يحتوي هذا الجهاز على حساس بوصلة. حدّد الاتجاه حسب الدرجات أعلاه.","ڕێگەت نەدا بە هەستەوەری جووڵە. لە ڕێکخستنەکانی Safari ڕێگەی پێ بدە.":"لم تسمح بحساس الحركة. اسمح به من إعدادات Safari.","نەتوانرا هەستەوەری جووڵە بکرێتەوە.":"تعذّر تشغيل حساس الحركة.","ئەم وێبگەڕە قیبلەنما پشتگیری ناکات.":"هذا المتصفح لا يدعم البوصلة.","شوێن بەردەست نییە.":"الموقع غير متاح.","دۆزینەوەی شوێن...":"جارٍ تحديد الموقع...","شوێنەکەت نەدۆزرایەوە، شاری هەڵبژێردراو بەکاردێت.":"تعذّر تحديد موقعك، ستُستخدم المدينة المختارة.","{n} م":"{n} م","{n} کم":"{n} كم","دۆزینەوەی شوێنەکەت...":"جارٍ تحديد موقعك...","گەڕان بۆ مزگەوتەکان...":"جارٍ البحث عن المساجد...","شوێنەکەت نەدۆزرایەوە؛ ":"تعذّر تحديد موقعك؛ ","ناوەندی {c} بەکارهات. بۆ وردی «شوێنی ئێستام بدۆزەوە» دابگرە.":"استُخدم مركز {c}. للدقة اضغط «حدّد موقعي».","مزگەوتەکان بار نەبوون (ئینتەرنێت؟). دووبارە هەوڵ بدەرەوە یان «لە Google Maps بگەڕێ» بەکاربهێنە.":"تعذّر تحميل المساجد (الإنترنت؟). حاول مرة أخرى أو استخدم «ابحث في Google Maps».","شوێنی تۆ":"موقعك","ڕێگا لە Google Maps":"الطريق في Google Maps","{d} لە تۆوە":"{d} منك","{d} لە ناوەندی شار":"{d} من مركز المدينة","هیچ مزگەوتێک لەم نزیکانە تۆمار نەکراوە. «لە Google Maps بگەڕێ» بەکاربهێنە.":"لا توجد مساجد مسجلة قريبة. استخدم «ابحث في Google Maps».","ڕێگە بە Notifications نەدراوە — لە Settings چالاکی بکە":"الإشعارات غير مسموح بها — فعّلها من الإعدادات","🕌 کاتی بانگی {p}":"🕌 حان وقت أذان {p}","ئەپەکە بکەرەوە بۆ ئەوەی کاتەکانی بانگ نوێ بکرێنەوە":"افتح التطبيق لتحديث أوقات الأذان","هیچ بانگێک هەڵنەبژێردراوە":"لم يتم اختيار أي أذان","✓ {n} بانگ ڕێکخراوە · {c}":"✓ تمت جدولة {n} أذان · {c}","هەڵە: ":"خطأ: ","🕌 تاقیکردنەوەی بانگ":"🕌 تجربة الأذان","{c} · ئەمە تەنها تاقیکردنەوەیە":"{c} · هذه مجرد تجربة","ئێستا مۆبایلەکە قفڵ بکە، دوای ١٠ چرکە بانگ دێت":"اقفل الهاتف الآن، سيُرفع الأذان بعد ١٠ ثوانٍ"},
+en:{"منارە":"Menare","کاتەکانی نوێژی کوردستان":"Kurdistan Prayer Times","شار":"City","نوێژی داهاتوو":"Next prayer","ماوە بۆ بانگ":"Time until adhan","کاتەکانی ئەمڕۆ":"Today's times","بانگ لەسەر ئایفۆن":"Adhan on iPhone","تاقیکردنەوەی بانگ (دوای ١٠ چرکە)":"Test adhan (in 10 seconds)","بەیانیان":"Morning","ئێواران":"Evening","دەستپێکردنەوە":"Restart","سەرچاوە: حیسنولموسلیم. دوگمەی خوارەوەی هەر زیکرێک دابگرە بۆ ژماردن.":"Source: Hisn al-Muslim. Tap the button under each dhikr to count.","شارەکان و سەرچاوەی کاتەکان":"Cities and time sources","هەر شارێک یان خشتەی تایبەتی خۆی هەیە، یان خشتەی شارێکی نزیک بەکاردێنێت. ئەو شارانەی نیشانەی «پشکنین نەکراوە»یان هەیە، هێشتا لەگەڵ مزگەوتی ناوخۆ بەراورد نەکراون. ئەگەر کاتێکی هەڵە بینی، ئاگادارم بکەرەوە.":"Each city either has its own table or uses a nearby city's table. Cities marked “Not verified” have not been checked against local mosques yet. If you see a wrong time, please let us know.","باکوور":"N","قیبلەنما بەکاربخە":"Start compass","شوێنی ئێستام بەکاربهێنە":"Use my location","مۆبایلەکە بە ڕاستی لەسەر دەستت دابنێ و لە ئامێری ئاسن و موگناتیس دووری بخەرەوە. کاتێک وێنەی کەعبە هاتە ژێر سێگۆشە زەردەکەی سەرەوە، ڕووت لە قیبلەیە. ئەگەر ئاراستەکە جێگیر نەبوو، مۆبایلەکە چەند جارێک بە شێوەی ژمارە ٨ لە هەوادا بجووڵێنە بۆ ڕێکخستنەوەی قیبلەنماکە.":"Hold the phone flat in your hand, away from metal and magnets. When the Kaaba is under the yellow triangle at the top, you are facing the Qibla. If the direction keeps moving, wave the phone in a figure 8 a few times to calibrate the compass.","مزگەوتەکانی نزیکت":"Mosques near you","نزیکترین مزگەوت":"Nearest mosque","ڕێگا":"Directions","شوێنی ئێستام بدۆزەوە":"Find my location","لە Google Maps بگەڕێ":"Search in Google Maps","نەخشە و ناوی مزگەوتەکان لە OpenStreetMap ـەوەن. لەوانەیە هەندێک مزگەوت هێشتا تۆمار نەکرابن؛ ئەو کاتە «لە Google Maps بگەڕێ» بەکاربهێنە.":"The map and mosque names come from OpenStreetMap. Some mosques may not be listed yet; if so, use “Search in Google Maps”.","ئەمڕۆ":"Today","زیکر":"Adhkar","قیبلە":"Qibla","مانگ":"Month","شارەکان":"Cities","مزگەوت":"Mosque","کاتی زیکر":"Dhikr time","مانگی پێشوو":"Previous month","مانگی داهاتوو":"Next month","نەخشەی مزگەوتەکان":"Mosque map","بەشەکان":"Sections","خشتەی تایبەتی خۆی":"Own table","خشتەی {c}":"{c} table","وەک ئەپە باوەڕپێکراوەکەت":"Matches your trusted app","پشکنین نەکراوە":"Not verified","پ.ن":"AM","د.ن":"PM","بانگی نییە":"No adhan","تێپەڕی":"Passed","ئاگادارکردنەوەی بانگی {p}":"{p} adhan alert","سبەینێ":"Tomorrow","ڕێکەوت":"Date","کاتەکان":"Times","ڕۆژی {d}ی ڕەمەزان":"Ramadan, day {d}","سبەینێ جەژنی ڕەمەزانە (نزیکەی)":"Eid al-Fitr is tomorrow (approx.)","ڕەمەزانت پیرۆز بێت · جەژن نزیکەی {n} ڕۆژی ماوە":"Ramadan Mubarak · Eid in about {n} days","ڕۆژ بۆ جەژن":"days to Eid","سبەینێ ڕەمەزانە":"Ramadan starts tomorrow","مانگی پیرۆزی ڕەمەزان":"The holy month of Ramadan","یەکەم ڕۆژ نزیکەی {date} · بە پێی بینینی مانگ":"First day about {date} · depends on moon sighting","ڕۆژ ماوە":"days left","زیکرەکانی بەیانیان":"Morning adhkar","زیکرەکانی ئێواران":"Evening adhkar","هەمووی خوێندرایەوە":"All read","{a} لە {b} خوێندراوە":"{a} of {b} read","ئایەتی {n}":"Verse {n}","تایبەت بە بەیانیان":"Morning only","تایبەت بە ئێواران":"Evening only","تەواو بوو":"Done","ماوە {n} جار":"{n} left","{n} جار":"{n} times","یەک جار":"Once","{a} لە {b} زیکر":"{a} of {b} adhkar","ئایەتولکورسی":"Ayat al-Kursi","سوورەتی ئیخلاس":"Surah Al-Ikhlas","سوورەتی فەلەق":"Surah Al-Falaq","سوورەتی ناس":"Surah An-Nas","سەیدولئیستیغفار":"Sayyid al-Istighfar","شوێنی ئێستات":"Your location","قیبلە {d}° لە باکوورەوە، بە ئاراستەی کاتژمێر":"Qibla is {d}° from north, clockwise","چاوەڕێی هەستەوەری قیبلەنما...":"Waiting for the compass sensor...","ڕووت لە قیبلەیە ✓":"You are facing the Qibla ✓","بسووڕێوە بەرەو ڕاست {d}°":"Turn right {d}°","بسووڕێوە بەرەو چەپ {d}°":"Turn left {d}°","ئەم ئامێرە هەستەوەری قیبلەنمای نییە. ئاراستەکە بە پێی پلەکانی سەرەوە دیاری بکە.":"This device has no compass sensor. Use the degrees above to find the direction.","ڕێگەت نەدا بە هەستەوەری جووڵە. لە ڕێکخستنەکانی Safari ڕێگەی پێ بدە.":"Motion sensor access was denied. Allow it in Safari settings.","نەتوانرا هەستەوەری جووڵە بکرێتەوە.":"Couldn't start the motion sensor.","ئەم وێبگەڕە قیبلەنما پشتگیری ناکات.":"This browser doesn't support the compass.","شوێن بەردەست نییە.":"Location isn't available.","دۆزینەوەی شوێن...":"Finding location...","شوێنەکەت نەدۆزرایەوە، شاری هەڵبژێردراو بەکاردێت.":"Couldn't find your location; using the selected city.","{n} م":"{n} m","{n} کم":"{n} km","دۆزینەوەی شوێنەکەت...":"Finding your location...","گەڕان بۆ مزگەوتەکان...":"Searching for mosques...","شوێنەکەت نەدۆزرایەوە؛ ":"Couldn't find your location; ","ناوەندی {c} بەکارهات. بۆ وردی «شوێنی ئێستام بدۆزەوە» دابگرە.":"Using the centre of {c}. For accuracy, tap “Find my location”.","مزگەوتەکان بار نەبوون (ئینتەرنێت؟). دووبارە هەوڵ بدەرەوە یان «لە Google Maps بگەڕێ» بەکاربهێنە.":"Couldn't load mosques (no internet?). Try again or use “Search in Google Maps”.","شوێنی تۆ":"You are here","ڕێگا لە Google Maps":"Directions in Google Maps","{d} لە تۆوە":"{d} from you","{d} لە ناوەندی شار":"{d} from the city centre","هیچ مزگەوتێک لەم نزیکانە تۆمار نەکراوە. «لە Google Maps بگەڕێ» بەکاربهێنە.":"No mosques are listed nearby. Use “Search in Google Maps”.","ڕێگە بە Notifications نەدراوە — لە Settings چالاکی بکە":"Notifications are off — turn them on in Settings","🕌 کاتی بانگی {p}":"🕌 Time for {p}","ئەپەکە بکەرەوە بۆ ئەوەی کاتەکانی بانگ نوێ بکرێنەوە":"Open the app to refresh the adhan times","هیچ بانگێک هەڵنەبژێردراوە":"No adhan selected","✓ {n} بانگ ڕێکخراوە · {c}":"✓ {n} adhans scheduled · {c}","هەڵە: ":"Error: ","🕌 تاقیکردنەوەی بانگ":"🕌 Adhan test","{c} · ئەمە تەنها تاقیکردنەوەیە":"{c} · This is only a test","ئێستا مۆبایلەکە قفڵ بکە، دوای ١٠ چرکە بانگ دێت":"Lock your phone now; the adhan will play in 10 seconds"}};
+var CN={"سۆران":["سوران","Soran"],"ڕەواندز":["راوندوز","Rawanduz"],"چۆمان":["جومان","Choman"],"سیدەکان":["سيدكان","Sidakan"],"مێرگەسۆر":["ميركسور","Mergasur"],"شەقڵاوە":["شقلاوة","Shaqlawa"],"هەولێر":["أربيل","Erbil"],"خەبات":["خبات","Khabat"],"کۆیە":["كويه","Koya"],"تەقتەق":["طقطق","Taqtaq"],"سلێمانی":["السليمانية","Sulaymaniyah"],"ڕانیە":["رانية","Ranya"],"قەڵادزێ":["قلعة دزه","Qaladze"],"دووکان":["دوكان","Dukan"],"چەمچەماڵ":["جمجمال","Chamchamal"],"قەرەهەنجیر":["قرهنجير","Qara Hanjir"],"پێنجوێن":["بنجوين","Penjwen"],"سەید سادق":["سيد صادق","Sayid Sadiq"],"دەربەندیخان":["دربندخان","Darbandikhan"],"هەڵەبجە":["حلبجة","Halabja"],"کەلار":["كلار","Kalar"],"کفری":["كفري","Kifri"],"دهۆک":["دهوك","Duhok"],"سێمێل":["سميل","Semel"],"زاخۆ":["زاخو","Zakho"],"ئامێدی":["العمادية","Amedi"],"ئاکرێ":["عقرة","Akre"],"شێخان":["الشيخان","Shekhan"],"کەرکووک":["كركوك","Kirkuk"],"توزخورماتوو":["طوزخورماتو","Tuz Khurmatu"],"جەلەولا":["جلولاء","Jalawla"],"خانەقین":["خانقين","Khanaqin"]};
+var L10={"ar":{"NAMES":{"fajr":"الفجر","sunrise":"الشروق","dhuhr":"الظهر","asr":"العصر","maghrib":"المغرب","isha":"العشاء"},"MONTHS":["كانون الثاني","شباط","آذار","نيسان","أيار","حزيران","تموز","آب","أيلول","تشرين الأول","تشرين الثاني","كانون الأول"],"HMONTHS":["محرم","صفر","ربيع الأول","ربيع الآخر","جمادى الأولى","جمادى الآخرة","رجب","شعبان","رمضان","شوال","ذو القعدة","ذو الحجة"],"WDAYS":["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"],"TITLE":"منارة - أوقات الصلاة في كوردستان"},"en":{"NAMES":{"fajr":"Fajr","sunrise":"Sunrise","dhuhr":"Dhuhr","asr":"Asr","maghrib":"Maghrib","isha":"Isha"},"MONTHS":["January","February","March","April","May","June","July","August","September","October","November","December"],"HMONTHS":["Muharram","Safar","Rabi al-Awwal","Rabi al-Thani","Jumada al-Ula","Jumada al-Akhirah","Rajab","Sha'ban","Ramadan","Shawwal","Dhu al-Qa'dah","Dhu al-Hijjah"],"WDAYS":["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"],"TITLE":"Menare - Kurdistan Prayer Times"}};
+function tr(s,v){var o=s;if(LANG!=="ckb"){var x=I18N[LANG][s];if(x!=null)o=x;}if(v)o=o.replace(/\{(\w+)\}/g,function(m,k){return v[k]!=null?v[k]:m;});return o;}
+function cn(k){if(LANG==="ckb")return k;var x=CN[k];return x?x[LANG==="ar"?0:1]:k;}
+function dstr(d,m,y){return LANG==="ckb"?d+"ی "+m+" "+y:(LANG==="en"?m+" "+d+", "+y:d+" "+m+" "+y);}
+(function(){var de=document.documentElement;de.lang=LANG;de.dir=LANG==="en"?"ltr":"rtl";
+  document.querySelectorAll("[lang=ckb]").forEach(function(n){n.setAttribute("lang",LANG);n.setAttribute("dir",de.dir);});
+  var ls=document.getElementById("lang");if(ls){ls.value=LANG;ls.addEventListener("change",function(){try{localStorage.setItem("pt-lang",JSON.stringify(ls.value));}catch(e){}location.reload();});}
+  if(LANG==="ckb")return;document.title=L10[LANG].TITLE;
+  var D=I18N[LANG],w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,null),n,list=[];while((n=w.nextNode()))list.push(n);
+  list.forEach(function(t){var s=t.nodeValue,k=s.trim();if(k&&D[k]!=null)t.nodeValue=s.replace(k,D[k]);});
+  document.querySelectorAll("[aria-label],[title],[alt]").forEach(function(e){["aria-label","title","alt"].forEach(function(a){var v=e.getAttribute(a);if(v&&D[v]!=null)e.setAttribute(a,D[v]);});});
+  if(LANG==="en"){var p=document.getElementById("mPrev"),q=document.getElementById("mNext");if(p)p.textContent="‹";if(q)q.textContent="›";}
+})();
 var AL="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_";
 // Yearly tables (366 rows, Jan 1..Dec 31 incl. Feb 29), 6 times per day: fajr, sunrise, dhuhr, asr, maghrib, isha.
 // Source: npm package kurdistan-prayer-times 1.0.9 by Ahmad Soran (MIT). Data origin not stated by the author.
@@ -371,6 +402,7 @@ var ICONS={
  asr:SV+'<circle cx="12" cy="10" r="3.5"/><path d="M12 3v1.5M3.5 10H5M19 10h1.5M6.5 4.5l1 1M17.5 4.5l-1 1M3 18h18M7 21h10"/></svg>',
  maghrib:SV+'<path d="M3 18h18"/><path d="M7 18a5 5 0 0 1 10 0"/><path d="M12 3v6M9 6l3 3 3-3"/></svg>',
  isha:SV+'<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/><path d="M17 3l.6 1.4L19 5l-1.4.6L17 7l-.6-1.4L15 5l1.4-.6z"/></svg>'};
+if(LANG!=="ckb"){NAMES=L10[LANG].NAMES;MONTHS=L10[LANG].MONTHS;HMONTHS=L10[LANG].HMONTHS;}
 var BELL=SV+'<path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>';
 var BELLOFF=SV+'<path d="M6 16v-5a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path d="M10 20a2 2 0 0 0 4 0"/><path d="M3 3l18 18"/></svg>';
 
@@ -387,19 +419,19 @@ CITIES.forEach(function(c,i){if(c[0]===savedCity)cityIdx=i;});
 function fix(a,b){a=a-b*Math.floor(a/b);return a<0?a+b:a}
 function times(y,m,d,c){var a=DEC[c[1]],i=(CUM[m-1]+d-1)*6,o={};KEYS.forEach(function(k,j){o[k]=a[i+j]});return o;}
 function srcHTML(c){
-  if(c[2])return '<span class="badge own">خشتەی تایبەتی خۆی</span>';
-  var t='<span class="badge '+(c[3]?"ok":"chk")+'">خشتەی '+TNAME[c[1]]+'</span>';
-  return t+'<span>'+(c[3]?"وەک ئەپە باوەڕپێکراوەکەت":"پشکنین نەکراوە")+'</span>';}
+  if(c[2])return '<span class="badge own">'+tr("خشتەی تایبەتی خۆی")+'</span>';
+  var t='<span class="badge '+(c[3]?"ok":"chk")+'">'+tr("خشتەی {c}",{c:cn(TNAME[c[1]])})+'</span>';
+  return t+'<span>'+tr(c[3]?"وەک ئەپە باوەڕپێکراوەکەت":"پشکنین نەکراوە")+'</span>';}
 function fmt(min,plain){min=fix(min,1440);var h=Math.floor(min/60),m=min%60,h12=((h+11)%12)+1;var s=(h12<10?"0":"")+h12+":"+(m<10?"0":"")+m;
-  return plain?s:s+"<small>"+(h<12?"پ.ن":"د.ن")+"</small>";}
+  return plain?s:s+"<small>"+tr(h<12?"پ.ن":"د.ن")+"</small>";}
 function kNow(){var d=new Date(Date.now()+TZ*3600e3);return{y:d.getUTCFullYear(),m:d.getUTCMonth()+1,d:d.getUTCDate(),min:d.getUTCHours()*60+d.getUTCMinutes(),sec:d.getUTCSeconds()};}
 function daysIn(y,m){return new Date(Date.UTC(y,m,0)).getUTCDate()}
 function el(id){return document.getElementById(id)}
 function hijri(){try{var p={};new Intl.DateTimeFormat("en-u-ca-islamic-umalqura-nu-latn",{day:"numeric",month:"numeric",year:"numeric",timeZone:"Asia/Baghdad"})
-  .formatToParts(new Date()).forEach(function(x){p[x.type]=x.value});var mo=parseInt(p.month,10);if(!mo)return"";return parseInt(p.day,10)+"ی "+HMONTHS[mo-1]+" "+parseInt(p.year,10);}catch(e){return""}}
+  .formatToParts(new Date()).forEach(function(x){p[x.type]=x.value});var mo=parseInt(p.month,10);if(!mo)return"";return dstr(parseInt(p.day,10),HMONTHS[mo-1],parseInt(p.year,10));}catch(e){return""}}
 
 var sel=el("city");
-CITIES.forEach(function(c,i){var o=document.createElement("option");o.value=i;o.textContent=c[0];sel.appendChild(o);});
+CITIES.forEach(function(c,i){var o=document.createElement("option");o.value=i;o.textContent=cn(c[0]);sel.appendChild(o);});
 sel.value=cityIdx;
 sel.addEventListener("change",function(){cityIdx=+sel.value;save("pt-city-name",CITIES[cityIdx][0]);renderAll();if(typeof mFromGps!=="undefined"&&mAsked&&!mFromGps){mPos=null;if(view==="mosque")mLoad(false);}});
 
@@ -422,12 +454,12 @@ el("cityList").addEventListener("click",function(e){var b=e.target.closest("butt
 function renderToday(){var n=kNow(),c=CITIES[cityIdx],t=times(n.y,n.m,n.d,c),nk=nextKey(n,t),nowM=n.min;
   el("todayList").innerHTML=KEYS.map(function(k){
     var isNext=k===nk.key&&!nk.tomorrow,passed=!isNext&&(nk.tomorrow||t[k]<=nowM),cls=(isNext?"is-next ":"")+(passed?"passed ":"")+(k==="sunrise"?"minor":"");
-    var sub=isNext?"نوێژی داهاتوو":(k==="sunrise"?"بانگی نییە":(passed?"تێپەڕی":""));
-    var bell=k==="sunrise"?'<span></span>':'<button class="bell" data-k="'+k+'" aria-pressed="'+(!!bells[k])+'" aria-label="ئاگادارکردنەوەی بانگی '+NAMES[k]+'">'+(bells[k]?BELL:BELLOFF)+'</button>';
+    var sub=isNext?tr("نوێژی داهاتوو"):(k==="sunrise"?tr("بانگی نییە"):(passed?tr("تێپەڕی"):""));
+    var bell=k==="sunrise"?'<span></span>':'<button class="bell" data-k="'+k+'" aria-pressed="'+(!!bells[k])+'" aria-label="'+tr("ئاگادارکردنەوەی بانگی {p}",{p:NAMES[k]})+'">'+(bells[k]?BELL:BELLOFF)+'</button>';
     return '<li class="'+cls+'"><span class="pi">'+ICONS[k]+'</span><span><span class="pn" style="display:block">'+NAMES[k]+'</span>'+(sub?'<span class="ps">'+sub+'</span>':'')+'</span><span class="pt">'+fmt(t[k])+'</span>'+bell+'</li>'}).join("");
   el("tSrc").innerHTML=srcHTML(c);
   var h=hijri();
-  el("todayDate").textContent=n.d+"ی "+MONTHS[n.m-1]+" "+n.y+(h?" · "+h:"");renderRamadan();}
+  el("todayDate").textContent=dstr(n.d,MONTHS[n.m-1],n.y)+(h?" · "+h:"");renderRamadan();}
 function nextKey(n,t){var order=TKEYS,s=n.min*60+n.sec;
   for(var i=0;i<order.length;i++){if(t[order[i]]*60>s)return{key:order[i],at:t[order[i]],prev:i>0?t[order[i-1]]:t.isha-1440,tomorrow:false};}
   var tm=new Date(Date.UTC(n.y,n.m-1,n.d+1)),tt=times(tm.getUTCFullYear(),tm.getUTCMonth()+1,tm.getUTCDate(),CITIES[cityIdx]);return{key:"fajr",at:tt.fajr+1440,prev:t.isha,tomorrow:true};}
@@ -435,17 +467,17 @@ var lastKey="";
 function tick(){var n=kNow(),t=times(n.y,n.m,n.d,CITIES[cityIdx]),nk=nextKey(n,t),s=n.min*60+n.sec;
   var left=nk.at*60-s;if(left<0)left=0;var h=Math.floor(left/3600),m=Math.floor(left%3600/60),sc=left%60;
   el("nextName").textContent=NAMES[nk.key];
-  el("nextTime").innerHTML=fmt(nk.at)+(nk.tomorrow?"<small>سبەینێ</small>":"");
+  el("nextTime").innerHTML=fmt(nk.at)+(nk.tomorrow?"<small>"+tr("سبەینێ")+"</small>":"");
   el("nextCd").textContent=(h<10?"0":"")+h+":"+(m<10?"0":"")+m+":"+(sc<10?"0":"")+sc;
   var tot=(nk.at-nk.prev)*60,done=s-nk.prev*60,p=tot>0?Math.max(0,Math.min(1,done/tot)):0;el("nextBar").style.width=(p*100).toFixed(1)+"%";
   var key=cityIdx+nk.key+nk.tomorrow+n.d;if(key!==lastKey){lastKey=key;renderToday();renderShort();}}
-function renderMonth(){var c=CITIES[cityIdx],n=kNow(),days=daysIn(mY,mM);el("mTitle").textContent=MONTHS[mM-1]+" "+mY+" · "+c[0];
+function renderMonth(){var c=CITIES[cityIdx],n=kNow(),days=daysIn(mY,mM);el("mTitle").textContent=MONTHS[mM-1]+" "+mY+" · "+cn(c[0]);
   el("mSrc").innerHTML=srcHTML(c);el("mSrc").className="srcchip";
-  var h='<thead><tr><th>ڕێکەوت</th>'+TKEYS.map(function(k){return"<th>"+NAMES[k]+"</th>"}).join("")+"</tr></thead><tbody>";
+  var h='<thead><tr><th>'+tr("ڕێکەوت")+'</th>'+TKEYS.map(function(k){return"<th>"+NAMES[k]+"</th>"}).join("")+"</tr></thead><tbody>";
   for(var d=1;d<=days;d++){var t=times(mY,mM,d,c),isT=(mY===n.y&&mM===n.m&&d===n.d);h+='<tr class="'+(isT?"today":"")+'"><td>'+(mM<10?"0":"")+mM+"-"+(d<10?"0":"")+d+"</td>"+TKEYS.map(function(k){return"<td>"+fmt(t[k],true)+"</td>"}).join("")+"</tr>";}
   el("mTable").innerHTML=h+"</tbody>";}
 function renderCities(){el("cityList").innerHTML=CITIES.map(function(c,i){
-  return '<li><span><span class="cn" style="display:block">'+c[0]+'</span><span class="cs srcchip" style="margin:0">'+srcHTML(c)+'</span></span><button class="btn" data-i="'+i+'">کاتەکان</button></li>'}).join("");}
+  return '<li><span><span class="cn" style="display:block">'+cn(c[0])+'</span><span class="cs srcchip" style="margin:0">'+srcHTML(c)+'</span></span><button class="btn" data-i="'+i+'">'+tr("کاتەکان")+'</button></li>'}).join("");}
 
 // Morning / evening adhkar with per-day counters
 function dKey(mode){var n=kNow();return "pt-dhikr-"+n.y+"-"+n.m+"-"+n.d+"-"+mode;}
@@ -455,7 +487,7 @@ function autoMode(){var n=kNow(),t=times(n.y,n.m,n.d,CITIES[cityIdx]);return (n.
 var dMode=autoMode();
 function dSum(mode){var it=dItems(mode),s=dState(mode),tot=0,left=0;it.forEach(function(a,i){tot+=a[3];left+=s[i];});return{done:tot-left,tot:tot,items:it.length,itemsDone:s.filter(function(x){return x===0}).length};}
 // Ramadan countdown (Umm al-Qura calendar; the official start can differ by a day after moon sighting)
-var WDAYS=["یەکشەممە","دووشەممە","سێشەممە","چوارشەممە","پێنجشەممە","هەینی","شەممە"];
+var WDAYS=LANG==="ckb"?["یەکشەممە","دووشەممە","سێشەممە","چوارشەممە","پێنجشەممە","هەینی","شەممە"]:L10[LANG].WDAYS;
 var HFMT=null;try{HFMT=new Intl.DateTimeFormat("en-u-ca-islamic-umalqura-nu-latn",{day:"numeric",month:"numeric",year:"numeric",timeZone:"UTC"});}catch(e){}
 function hParts(d){var p={};HFMT.formatToParts(d).forEach(function(x){p[x.type]=x.value});return{d:parseInt(p.day,10),m:parseInt(p.month,10),y:parseInt(p.year,10)};}
 var ramKey="",ramInfo=null;
@@ -465,30 +497,30 @@ function ramCalc(n){if(!HFMT)return null;var base=Date.UTC(n.y,n.m-1,n.d),h=hPar
   return null;}
 function renderRamadan(){var n=kNow(),key=n.y+"-"+n.m+"-"+n.d;if(key!==ramKey){ramKey=key;try{ramInfo=ramCalc(n);}catch(e){ramInfo=null;}}
   var box=el("ramadan"),r=ramInfo;if(!r){box.hidden=true;return;}box.hidden=false;
-  if(r.inR){el("rT").textContent="ڕۆژی "+r.day+"ی ڕەمەزان";
-    el("rS").textContent=r.left===1?"سبەینێ جەژنی ڕەمەزانە (نزیکەی)":"ڕەمەزانت پیرۆز بێت · جەژن نزیکەی "+r.left+" ڕۆژی ماوە";
-    el("rN").textContent=r.left;el("rU").textContent="ڕۆژ بۆ جەژن";return;}
-  var d=r.date;el("rT").textContent=r.left===1?"سبەینێ ڕەمەزانە":"مانگی پیرۆزی ڕەمەزان";
-  el("rS").textContent="یەکەم ڕۆژ نزیکەی "+WDAYS[d.getUTCDay()]+" "+d.getUTCDate()+"ی "+MONTHS[d.getUTCMonth()]+" "+d.getUTCFullYear()+" · بە پێی بینینی مانگ";
-  el("rN").textContent=r.left;el("rU").textContent=r.left===1?"ڕۆژ ماوە":"ڕۆژ ماوە";}
-function renderShort(){var m=autoMode(),s=dSum(m);el("dShortT").textContent=m==="m"?"زیکرەکانی بەیانیان":"زیکرەکانی ئێواران";
-  el("dShortS").textContent=s.itemsDone===s.items?"هەمووی خوێندرایەوە":(s.itemsDone+" لە "+s.items+" خوێندراوە");}
+  if(r.inR){el("rT").textContent=tr("ڕۆژی {d}ی ڕەمەزان",{d:r.day});
+    el("rS").textContent=r.left===1?tr("سبەینێ جەژنی ڕەمەزانە (نزیکەی)"):tr("ڕەمەزانت پیرۆز بێت · جەژن نزیکەی {n} ڕۆژی ماوە",{n:r.left});
+    el("rN").textContent=r.left;el("rU").textContent=tr("ڕۆژ بۆ جەژن");return;}
+  var d=r.date;el("rT").textContent=tr(r.left===1?"سبەینێ ڕەمەزانە":"مانگی پیرۆزی ڕەمەزان");
+  el("rS").textContent=tr("یەکەم ڕۆژ نزیکەی {date} · بە پێی بینینی مانگ",{date:WDAYS[d.getUTCDay()]+" "+dstr(d.getUTCDate(),MONTHS[d.getUTCMonth()],d.getUTCFullYear())});
+  el("rN").textContent=r.left;el("rU").textContent=(LANG==="en"&&r.left===1)?"day left":tr("ڕۆژ ماوە");}
+function renderShort(){var m=autoMode(),s=dSum(m);el("dShortT").textContent=tr(m==="m"?"زیکرەکانی بەیانیان":"زیکرەکانی ئێواران");
+  el("dShortS").textContent=s.itemsDone===s.items?tr("هەمووی خوێندرایەوە"):tr("{a} لە {b} خوێندراوە",{a:s.itemsDone,b:s.items});}
 function arN(n){return String(n).replace(/\d/g,function(d){return "٠١٢٣٤٥٦٧٨٩"[d];});}
 function qHTML(q){return '<div class="qr" lang="ar" dir="rtl">'+(q.pre?'<p class="qpre">'+q.pre+'</p>':'')+(q.bas?'<p class="qbas">'+q.bas+'</p>':'')+
   '<div class="dx qx'+(q.ayat.length>1?' qlines':'')+'">'+q.ayat.map(function(v){var w=v[1].split(' '),last=w.pop();
-    return '<span class="qa">'+(w.length?w.join(' ')+' ':'')+'<span class="qend">'+last+'\u00a0<span class="ayah" aria-label="ئایەتی '+v[0]+'">'+arN(v[0])+'</span></span></span>';}).join(' ')+'</div></div>';}
+    return '<span class="qa">'+(w.length?w.join(' ')+' ':'')+'<span class="qend">'+last+'\u00a0<span class="ayah" aria-label="'+tr("ئایەتی {n}",{n:v[0]})+'">'+arN(v[0])+'</span></span></span>';}).join(' ')+'</div></div>';}
 function renderAdhkar(){var it=dItems(dMode),s=dState(dMode);
   el("dM").setAttribute("aria-pressed",dMode==="m");el("dE").setAttribute("aria-pressed",dMode==="e");
   el("dList").innerHTML=it.map(function(a,i){var txt=(dMode==="e"&&a[2])?a[2]:a[1],left=s[i],done=left===0;
-    return '<li class="'+(done?"done":"")+'">'+(a[4]?'<span class="dtag">'+(a[4]==="m"?"تایبەت بە بەیانیان":"تایبەت بە ئێواران")+'</span>':'')+(a[0]?'<span class="dt">'+a[0]+(txt.ref?' <span class="dref" lang="ar">'+txt.ref+'</span>':'')+'</span>':'')+(typeof txt==="object"?qHTML(txt):'<p class="dx" lang="ar" dir="rtl">'+txt+'</p>')+
-      '<button class="dbtn" type="button" data-i="'+i+'" aria-label="'+(done?"تەواو بوو":"ماوە "+left+" جار")+'"><span>'+(done?"تەواو بوو":(a[3]>1?a[3]+" جار":"یەک جار"))+'</span><span class="dc">'+(done?"✓":left)+'</span></button></li>';}).join("");
-  var sm=dSum(dMode);el("dProgT").textContent=sm.itemsDone+" لە "+sm.items+" زیکر";el("dBar").style.width=(sm.tot?sm.done/sm.tot*100:0).toFixed(1)+"%";}
+    return '<li class="'+(done?"done":"")+'">'+(a[4]?'<span class="dtag">'+tr(a[4]==="m"?"تایبەت بە بەیانیان":"تایبەت بە ئێواران")+'</span>':'')+(a[0]?'<span class="dt">'+tr(a[0])+(txt.ref?' <span class="dref" lang="ar">'+txt.ref+'</span>':'')+'</span>':'')+(typeof txt==="object"?qHTML(txt):'<p class="dx" lang="ar" dir="rtl">'+txt+'</p>')+
+      '<button class="dbtn" type="button" data-i="'+i+'" aria-label="'+(done?tr("تەواو بوو"):tr("ماوە {n} جار",{n:left}))+'"><span>'+(done?tr("تەواو بوو"):(a[3]>1?tr("{n} جار",{n:a[3]}):tr("یەک جار")))+'</span><span class="dc">'+(done?"✓":left)+'</span></button></li>';}).join("");
+  var sm=dSum(dMode);el("dProgT").textContent=tr("{a} لە {b} زیکر",{a:sm.itemsDone,b:sm.items});el("dBar").style.width=(sm.tot?sm.done/sm.tot*100:0).toFixed(1)+"%";}
 el("dList").addEventListener("click",function(e){var b=e.target.closest(".dbtn");if(!b)return;var i=+b.getAttribute("data-i"),s=dState(dMode);if(s[i]<=0)return;
   s[i]--;save(dKey(dMode),s);try{if(navigator.vibrate)navigator.vibrate(s[i]===0?[20,40,20]:10);}catch(x){}
-  var li=b.closest("li"),it=dItems(dMode)[i];if(s[i]===0){li.classList.add("done");b.querySelector("span").textContent="تەواو بوو";b.querySelector(".dc").textContent="✓";
+  var li=b.closest("li"),it=dItems(dMode)[i];if(s[i]===0){li.classList.add("done");b.querySelector("span").textContent=tr("تەواو بوو");b.querySelector(".dc").textContent="✓";
     var nx=li.nextElementSibling;if(nx&&!nx.classList.contains("done"))setTimeout(function(){nx.scrollIntoView({behavior:"smooth",block:"center"});},250);}
   else{b.querySelector(".dc").textContent=s[i];}
-  var sm=dSum(dMode);el("dProgT").textContent=sm.itemsDone+" لە "+sm.items+" زیکر";el("dBar").style.width=(sm.done/sm.tot*100).toFixed(1)+"%";renderShort();});
+  var sm=dSum(dMode);el("dProgT").textContent=tr("{a} لە {b} زیکر",{a:sm.itemsDone,b:sm.items});el("dBar").style.width=(sm.done/sm.tot*100).toFixed(1)+"%";renderShort();});
 el("dM").addEventListener("click",function(){dMode="m";renderAdhkar();});
 el("dE").addEventListener("click",function(){dMode="e";renderAdhkar();});
 el("dReset").addEventListener("click",function(){try{localStorage.removeItem(dKey(dMode));}catch(x){}renderAdhkar();renderShort();});
@@ -497,18 +529,18 @@ el("dShort").addEventListener("click",function(){dMode=autoMode();setTab("adhkar
 var KAABA=[21.4225,39.8262],qPos=null,qHead=null,qShown=0,qOn=false,qVib=false;
 function qBearing(lat,lon){var r=Math.PI/180,p1=lat*r,p2=KAABA[0]*r,dl=(KAABA[1]-lon)*r;
   var b=Math.atan2(Math.sin(dl)*Math.cos(p2),Math.cos(p1)*Math.sin(p2)-Math.sin(p1)*Math.cos(p2)*Math.cos(dl))/r;return (b+360)%360;}
-function qWhere(){var c=CITIES[cityIdx];if(qPos){var best=c,bd=1e9;CITIES.forEach(function(x){var d=Math.pow(x[4]-qPos[0],2)+Math.pow(x[5]-qPos[1],2);if(d<bd){bd=d;best=x;}});return{lat:qPos[0],lon:qPos[1],name:"شوێنی ئێستات",dec:best[6]};}return{lat:c[4],lon:c[5],name:c[0],dec:c[6]};}
+function qWhere(){var c=CITIES[cityIdx];if(qPos){var best=c,bd=1e9;CITIES.forEach(function(x){var d=Math.pow(x[4]-qPos[0],2)+Math.pow(x[5]-qPos[1],2);if(d<bd){bd=d;best=x;}});return{lat:qPos[0],lon:qPos[1],name:tr("شوێنی ئێستات"),dec:best[6]};}return{lat:c[4],lon:c[5],name:cn(c[0]),dec:c[6]};}
 (function(){var g=el("qTicks"),h="";for(var a=0;a<360;a+=10){var big=a%30===0,r1=big?110:116;h+='<line x1="150" y1="'+(150-r1)+'" x2="150" y2="'+(150-124)+'" stroke-width="'+(big?2.5:1.2)+'" transform="rotate('+a+' 150 150)"/>';}g.innerHTML=h;})();
 function qRender(){var w=qWhere(),b=qBearing(w.lat,w.lon);
-  el("qCity").textContent=w.name;el("qDeg").textContent="قیبلە "+Math.round(b)+"° لە باکوورەوە، بە ئاراستەی کاتژمێر";
+  el("qCity").textContent=w.name;el("qDeg").textContent=tr("قیبلە {d}° لە باکوورەوە، بە ئاراستەی کاتژمێر",{d:Math.round(b)});
   el("qNeedle").setAttribute("transform","rotate("+b.toFixed(1)+" 150 150)");
   var target=qHead==null?0:-qHead,d=((target-qShown)%360+540)%360-180;qShown+=d;
   el("qRot").style.transform="rotate("+qShown.toFixed(1)+"deg)";
   var st=el("qState");
-  if(qHead==null){st.className="qstate";st.textContent=qOn?"چاوەڕێی هەستەوەری قیبلەنما...":"";return;}
+  if(qHead==null){st.className="qstate";st.textContent=qOn?tr("چاوەڕێی هەستەوەری قیبلەنما..."):"";return;}
   var off=((b-qHead)%360+540)%360-180;
-  if(Math.abs(off)<=4){st.className="qstate on";st.textContent="ڕووت لە قیبلەیە ✓";if(!qVib){qVib=true;try{navigator.vibrate&&navigator.vibrate(40)}catch(x){}}}
-  else{qVib=false;st.className="qstate";st.textContent=(off>0?"بسووڕێوە بەرەو ڕاست ":"بسووڕێوە بەرەو چەپ ")+Math.round(Math.abs(off))+"°";}}
+  if(Math.abs(off)<=4){st.className="qstate on";st.textContent=tr("ڕووت لە قیبلەیە ✓");if(!qVib){qVib=true;try{navigator.vibrate&&navigator.vibrate(40)}catch(x){}}}
+  else{qVib=false;st.className="qstate";st.textContent=tr(off>0?"بسووڕێوە بەرەو ڕاست {d}°":"بسووڕێوە بەرەو چەپ {d}°",{d:Math.round(Math.abs(off))});}}
 function qScreen(){try{return (screen.orientation&&screen.orientation.angle)||window.orientation||0}catch(x){return 0}}
 function qOnEv(e){var h=null;
   if(typeof e.webkitCompassHeading==="number"&&!isNaN(e.webkitCompassHeading))h=e.webkitCompassHeading;
@@ -517,15 +549,15 @@ function qOnEv(e){var h=null;
 function qListen(){qOn=true;el("qStart").hidden=true;
   if("ondeviceorientationabsolute" in window)window.addEventListener("deviceorientationabsolute",qOnEv);
   else window.addEventListener("deviceorientation",qOnEv);
-  setTimeout(function(){if(qOn&&qHead==null){el("qState").textContent="ئەم ئامێرە هەستەوەری قیبلەنمای نییە. ئاراستەکە بە پێی پلەکانی سەرەوە دیاری بکە.";el("qStart").hidden=false;qOn=false;}},3000);qRender();}
+  setTimeout(function(){if(qOn&&qHead==null){el("qState").textContent=tr("ئەم ئامێرە هەستەوەری قیبلەنمای نییە. ئاراستەکە بە پێی پلەکانی سەرەوە دیاری بکە.");el("qStart").hidden=false;qOn=false;}},3000);qRender();}
 function qStop(){if(!qOn)return;window.removeEventListener("deviceorientationabsolute",qOnEv);window.removeEventListener("deviceorientation",qOnEv);qOn=false;qHead=null;el("qStart").hidden=false;}
 el("qStart").addEventListener("click",function(){var D=window.DeviceOrientationEvent;
-  if(D&&typeof D.requestPermission==="function"){D.requestPermission().then(function(r){if(r==="granted")qListen();else el("qState").textContent="ڕێگەت نەدا بە هەستەوەری جووڵە. لە ڕێکخستنەکانی Safari ڕێگەی پێ بدە.";}).catch(function(){el("qState").textContent="نەتوانرا هەستەوەری جووڵە بکرێتەوە.";});}
-  else if(D)qListen();else el("qState").textContent="ئەم وێبگەڕە قیبلەنما پشتگیری ناکات.";});
-el("qGps").addEventListener("click",function(){var b=this;if(!navigator.geolocation){el("qState").textContent="شوێن بەردەست نییە.";return;}
-  b.disabled=true;b.textContent="دۆزینەوەی شوێن...";
-  navigator.geolocation.getCurrentPosition(function(p){qPos=[p.coords.latitude,p.coords.longitude];b.disabled=false;b.textContent="شوێنی ئێستام بەکاربهێنە";qRender();},
-    function(){b.disabled=false;b.textContent="شوێنی ئێستام بەکاربهێنە";el("qState").textContent="شوێنەکەت نەدۆزرایەوە، شاری هەڵبژێردراو بەکاردێت.";},{enableHighAccuracy:true,timeout:10000});});
+  if(D&&typeof D.requestPermission==="function"){D.requestPermission().then(function(r){if(r==="granted")qListen();else el("qState").textContent=tr("ڕێگەت نەدا بە هەستەوەری جووڵە. لە ڕێکخستنەکانی Safari ڕێگەی پێ بدە.");}).catch(function(){el("qState").textContent=tr("نەتوانرا هەستەوەری جووڵە بکرێتەوە.");});}
+  else if(D)qListen();else el("qState").textContent=tr("ئەم وێبگەڕە قیبلەنما پشتگیری ناکات.");});
+el("qGps").addEventListener("click",function(){var b=this;if(!navigator.geolocation){el("qState").textContent=tr("شوێن بەردەست نییە.");return;}
+  b.disabled=true;b.textContent=tr("دۆزینەوەی شوێن...");
+  navigator.geolocation.getCurrentPosition(function(p){qPos=[p.coords.latitude,p.coords.longitude];b.disabled=false;b.textContent=tr("شوێنی ئێستام بەکاربهێنە");qRender();},
+    function(){b.disabled=false;b.textContent=tr("شوێنی ئێستام بەکاربهێنە");el("qState").textContent=tr("شوێنەکەت نەدۆزرایەوە، شاری هەڵبژێردراو بەکاردێت.");},{enableHighAccuracy:true,timeout:10000});});
 function qShow(){qRender();}
 function renderAll(){lastKey="";if(!qPos&&view==="qibla")qRender();renderToday();renderMonth();renderShort();tick();}
 /* ---- Nearby mosques: OpenStreetMap (Overpass) + Leaflet, directions open in Google Maps ---- */
@@ -536,10 +568,10 @@ function mLib(){if(window.L)return Promise.resolve();if(mLibP)return mLibP;
   mLibP=new Promise(function(ok,no){var c=document.createElement("link");c.rel="stylesheet";c.href="vendor/leaflet/leaflet.css";document.head.appendChild(c);
     var j=document.createElement("script");j.src="vendor/leaflet/leaflet.js";j.onload=ok;j.onerror=function(){mLibP=null;no();};document.head.appendChild(j);});return mLibP;}
 function mDist(a,b){var R=6371000,r=Math.PI/180,dl=(b[0]-a[0])*r,dg=(b[1]-a[1])*r,x=Math.sin(dl/2)*Math.sin(dl/2)+Math.cos(a[0]*r)*Math.cos(b[0]*r)*Math.sin(dg/2)*Math.sin(dg/2);return 2*R*Math.asin(Math.sqrt(x));}
-function mFmtD(m){return m<1000?Math.round(m/10)*10+" م":(m/1000).toFixed(m<10000?1:0)+" کم";}
+function mFmtD(m){return m<1000?tr("{n} م",{n:Math.round(m/10)*10}):tr("{n} کم",{n:(m/1000).toFixed(m<10000?1:0)});}
 function mEsc(t){return String(t).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
 function mDir(q){return "https://www.google.com/maps/dir/?api=1&destination="+q.lat.toFixed(6)+","+q.lng.toFixed(6)+"&travelmode="+(q.d>1500?"driving":"walking");}
-function mGmapsLink(){var c=mPos||[CITIES[cityIdx][4],CITIES[cityIdx][5]];el("mGmaps").href="https://www.google.com/maps/search/"+encodeURIComponent("مزگەوت")+"/@"+c[0].toFixed(5)+","+c[1].toFixed(5)+",15z";}
+function mGmapsLink(){var c=mPos||[CITIES[cityIdx][4],CITIES[cityIdx][5]];el("mGmaps").href="https://www.google.com/maps/search/"+encodeURIComponent(tr("مزگەوت"))+"/@"+c[0].toFixed(5)+","+c[1].toFixed(5)+",15z";}
 function mFetch(c,rad){var key="pt-mq-"+c[0].toFixed(2)+","+c[1].toFixed(2)+"-"+rad,hit=load(key,null);
   if(hit&&hit.t&&Date.now()-hit.t<7*864e5)return Promise.resolve(hit.v);
   var q='[out:json][timeout:25];nwr["amenity"="place_of_worship"]["religion"="muslim"](around:'+rad+','+c[0].toFixed(5)+','+c[1].toFixed(5)+');out center tags 300;';
@@ -561,30 +593,32 @@ function mNearby(c){return mData().then(function(d){if(!mInBox(d,c))return mFetc
 function mLocate(){return new Promise(function(ok){if(!navigator.geolocation){ok(null);return;}
   navigator.geolocation.getCurrentPosition(function(p){ok([p.coords.latitude,p.coords.longitude]);},function(){ok(null);},{enableHighAccuracy:true,timeout:12000,maximumAge:60000});});}
 function mLoad(useGps){if(mBusy)return;mBusy=true;var b=el("mGps");b.disabled=true;
-  el("mState").textContent=useGps?"دۆزینەوەی شوێنەکەت...":"…";
+  el("mState").textContent=useGps?tr("دۆزینەوەی شوێنەکەت..."):"…";
   (useGps?mLocate():Promise.resolve(null)).then(function(g){
     if(g){mPos=g;mFromGps=true;}else if(!mPos||!mFromGps){mPos=[CITIES[cityIdx][4],CITIES[cityIdx][5]];mFromGps=false;}
-    mGmapsLink();el("mState").textContent="گەڕان بۆ مزگەوتەکان...";
+    mGmapsLink();el("mState").textContent=tr("گەڕان بۆ مزگەوتەکان...");
     return mLib().then(function(){mInitMap();return mNearby(mPos);})
       .then(function(v){mRender(v);
-        el("mState").textContent=(mFromGps?"":(useGps?"شوێنەکەت نەدۆزرایەوە؛ ":"")+"ناوەندی "+CITIES[cityIdx][0]+" بەکارهات. بۆ وردی «شوێنی ئێستام بدۆزەوە» دابگرە.");});
-  }).catch(function(){el("mState").textContent="مزگەوتەکان بار نەبوون (ئینتەرنێت؟). دووبارە هەوڵ بدەرەوە یان «لە Google Maps بگەڕێ» بەکاربهێنە.";})
+        el("mState").textContent=(mFromGps?"":(useGps?tr("شوێنەکەت نەدۆزرایەوە؛ "):"")+tr("ناوەندی {c} بەکارهات. بۆ وردی «شوێنی ئێستام بدۆزەوە» دابگرە.",{c:cn(CITIES[cityIdx][0])}));});
+  }).catch(function(){el("mState").textContent=tr("مزگەوتەکان بار نەبوون (ئینتەرنێت؟). دووبارە هەوڵ بدەرەوە یان «لە Google Maps بگەڕێ» بەکاربهێنە.");})
   .then(function(){mBusy=false;b.disabled=false;});}
 function mInitMap(){if(mMap){mMap.setView(mPos,15);return;}
   mMap=L.map("mMap",{zoomControl:true,attributionControl:true}).setView(mPos,15);
-  L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}).addTo(mMap);
+  /* inside the iPhone app pages have no web Referer, which OSM tiles require; use CARTO's OSM tiles there */
+  if(NATIVE)L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{maxZoom:19,subdomains:"abcd",attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>'}).addTo(mMap);
+  else L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}).addTo(mMap);
   mLayer=L.layerGroup().addTo(mMap);}
 function mRender(v){var p=mPos;v.forEach(function(q){q.d=mDist(p,[q.lat,q.lng]);});v.sort(function(a,b){return a.d-b.d;});
   mLayer.clearLayers();
-  if(mFromGps)L.circleMarker(p,{radius:8,color:"#FFFFFF",weight:3,fillColor:"#2F7BF6",fillOpacity:1}).addTo(mLayer).bindPopup('<div class="mpop">شوێنی تۆ</div>');
-  v.slice(0,150).forEach(function(q,i){var nm=q.n||"مزگەوت";
+  if(mFromGps)L.circleMarker(p,{radius:8,color:"#FFFFFF",weight:3,fillColor:"#2F7BF6",fillOpacity:1}).addTo(mLayer).bindPopup('<div class="mpop">'+tr("شوێنی تۆ")+'</div>');
+  v.slice(0,150).forEach(function(q,i){var nm=q.n||tr("مزگەوت");
     L.marker([q.lat,q.lng],{icon:L.divIcon({className:"",html:'<div class="mpin'+(i===0?" near":"")+'">'+MQ_ICON+'</div>',iconSize:[30,30],iconAnchor:[15,30],popupAnchor:[0,-28]}),zIndexOffset:i===0?1000:0})
-      .addTo(mLayer).bindPopup('<div class="mpop"><b>'+mEsc(nm)+'</b><br>'+mFmtD(q.d)+'<br><a href="'+mDir(q)+'" target="_blank" rel="noopener">ڕێگا لە Google Maps</a></div>');});
-  if(v.length){var n=v[0];el("mNear").hidden=false;el("mNearN").textContent=n.n||"مزگەوت";el("mNearD").textContent=mFmtD(n.d)+(mFromGps?" لە تۆوە":" لە ناوەندی شار");el("mNearGo").href=mDir(n);
+      .addTo(mLayer).bindPopup('<div class="mpop"><b>'+mEsc(nm)+'</b><br>'+mFmtD(q.d)+'<br><a href="'+mDir(q)+'" target="_blank" rel="noopener">'+tr("ڕێگا لە Google Maps")+'</a></div>');});
+  if(v.length){var n=v[0];el("mNear").hidden=false;el("mNearN").textContent=n.n||tr("مزگەوت");el("mNearD").textContent=tr(mFromGps?"{d} لە تۆوە":"{d} لە ناوەندی شار",{d:mFmtD(n.d)});el("mNearGo").href=mDir(n);
     var pts=[p].concat(v.slice(0,3).map(function(q){return[q.lat,q.lng]}));mMap.fitBounds(pts,{padding:[40,40],maxZoom:17});}
   else{el("mNear").hidden=true;mMap.setView(p,14);}
-  el("mList").innerHTML=v.length?v.slice(0,20).map(function(q){return '<li><span><span class="cn" style="display:block">'+mEsc(q.n||"مزگەوت")+'</span><span class="cs">'+mFmtD(q.d)+'</span></span><a class="mgo" href="'+mDir(q)+'" target="_blank" rel="noopener">ڕێگا</a></li>';}).join("")
-    :'<li><span class="cs">هیچ مزگەوتێک لەم نزیکانە تۆمار نەکراوە. «لە Google Maps بگەڕێ» بەکاربهێنە.</span></li>';
+  el("mList").innerHTML=v.length?v.slice(0,20).map(function(q){return '<li><span><span class="cn" style="display:block">'+mEsc(q.n||tr("مزگەوت"))+'</span><span class="cs">'+mFmtD(q.d)+'</span></span><a class="mgo" href="'+mDir(q)+'" target="_blank" rel="noopener">'+tr("ڕێگا")+'</a></li>';}).join("")
+    :'<li><span class="cs">'+tr("هیچ مزگەوتێک لەم نزیکانە تۆمار نەکراوە. «لە Google Maps بگەڕێ» بەکاربهێنە.")+'</span></li>';
   setTimeout(function(){mMap.invalidateSize();},60);}
 function mShow(){mGmapsLink();if(!mAsked){mAsked=true;mLoad(true);}else if(mMap)setTimeout(function(){mMap.invalidateSize();},60);}
 el("mGps").addEventListener("click",function(){mLoad(true);});
@@ -595,10 +629,10 @@ function LN(m,o){return CAPN.nativePromise("LocalNotifications",m,o||{});}
 var schedT=null;
 function scheduleAdhan(){if(!NATIVE)return;clearTimeout(schedT);schedT=setTimeout(doSchedule,700);}
 function adhanPerm(){return LN("checkPermissions").then(function(p){return p.display==="granted"?p:LN("requestPermissions");}).then(function(p){return p.display==="granted";});}
-function ampm(min){min=fix(min,1440);return min<720?"پ.ن":"د.ن";}
+function ampm(min){min=fix(min,1440);return tr(min<720?"پ.ن":"د.ن");}
 function doSchedule(){
   adhanPerm().then(function(ok){
-    if(!ok){el("adhanSt").textContent="ڕێگە بە Notifications نەدراوە — لە Settings چالاکی بکە";return;}
+    if(!ok){el("adhanSt").textContent=tr("ڕێگە بە Notifications نەدراوە — لە Settings چالاکی بکە");return;}
     return LN("getPending").then(function(r){
       var ids=(r.notifications||[]).map(function(x){return{id:x.id};});
       return ids.length?LN("cancel",{notifications:ids}):null;
@@ -609,23 +643,23 @@ function doSchedule(){
         TKEYS.forEach(function(key){
           if(!bells[key]||list.length>=58)return;
           var at=Date.UTC(y,m-1,d)+t[key]*60000-TZ*3600e3;if(at<nowT+3000)return;
-          list.push({id:id++,title:"🕌 کاتی بانگی "+NAMES[key],body:c[0]+" · "+fmt(t[key],true)+" "+ampm(t[key]),sound:"adhan.wav",schedule:{at:new Date(at)}});last=at;});
+          list.push({id:id++,title:tr("🕌 کاتی بانگی {p}",{p:NAMES[key]}),body:cn(c[0])+" · "+fmt(t[key],true)+" "+ampm(t[key]),sound:"adhan.wav",schedule:{at:new Date(at)}});last=at;});
       }
-      if(last)list.push({id:id++,title:"منارە",body:"ئەپەکە بکەرەوە بۆ ئەوەی کاتەکانی بانگ نوێ بکرێنەوە",schedule:{at:new Date(last+120000)}});
-      if(!list.length){el("adhanSt").textContent="هیچ بانگێک هەڵنەبژێردراوە";return;}
-      return LN("schedule",{notifications:list}).then(function(){el("adhanSt").textContent="✓ "+(list.length-1)+" بانگ ڕێکخراوە · "+c[0];});
+      if(last)list.push({id:id++,title:tr("منارە"),body:tr("ئەپەکە بکەرەوە بۆ ئەوەی کاتەکانی بانگ نوێ بکرێنەوە"),schedule:{at:new Date(last+120000)}});
+      if(!list.length){el("adhanSt").textContent=tr("هیچ بانگێک هەڵنەبژێردراوە");return;}
+      return LN("schedule",{notifications:list}).then(function(){el("adhanSt").textContent=tr("✓ {n} بانگ ڕێکخراوە · {c}",{n:list.length-1,c:cn(c[0])});});
     });
-  }).catch(function(e){el("adhanSt").textContent="هەڵە: "+((e&&e.message)||e);});
+  }).catch(function(e){el("adhanSt").textContent=tr("هەڵە: ")+((e&&e.message)||e);});
 }
 if(NATIVE){
   document.documentElement.classList.add("native");
   el("adhanBox").hidden=false;
   el("adhanTest").addEventListener("click",function(){
     adhanPerm().then(function(ok){
-      if(!ok){el("adhanSt").textContent="ڕێگە بە Notifications نەدراوە — لە Settings چالاکی بکە";return;}
-      return LN("schedule",{notifications:[{id:9000,title:"🕌 تاقیکردنەوەی بانگ",body:CITIES[cityIdx][0]+" · ئەمە تەنها تاقیکردنەوەیە",sound:"adhan.wav",schedule:{at:new Date(Date.now()+10000)}}]})
-        .then(function(){el("adhanSt").textContent="ئێستا مۆبایلەکە قفڵ بکە، دوای ١٠ چرکە بانگ دێت";});
-    }).catch(function(e){el("adhanSt").textContent="هەڵە: "+((e&&e.message)||e);});
+      if(!ok){el("adhanSt").textContent=tr("ڕێگە بە Notifications نەدراوە — لە Settings چالاکی بکە");return;}
+      return LN("schedule",{notifications:[{id:9000,title:tr("🕌 تاقیکردنەوەی بانگ"),body:tr("{c} · ئەمە تەنها تاقیکردنەوەیە",{c:cn(CITIES[cityIdx][0])}),sound:"adhan.wav",schedule:{at:new Date(Date.now()+10000)}}]})
+        .then(function(){el("adhanSt").textContent=tr("ئێستا مۆبایلەکە قفڵ بکە، دوای ١٠ چرکە بانگ دێت");});
+    }).catch(function(e){el("adhanSt").textContent=tr("هەڵە: ")+((e&&e.message)||e);});
   });
   document.addEventListener("resume",scheduleAdhan);
   var _renderAll=renderAll;renderAll=function(){_renderAll();scheduleAdhan();};
@@ -634,7 +668,7 @@ renderCities();setTab(view);renderAll();setInterval(tick,1000);
 })();
 </script>
 <script>
-if("serviceWorker" in navigator){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}
+if("serviceWorker" in navigator&&location.protocol==="https:"){window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});}
 </script>
 </body>
 </html>
