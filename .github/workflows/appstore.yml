@@ -15,6 +15,10 @@ on:
         description: "App version shown on the App Store"
         default: "1.0"
         required: true
+      screenshots:
+        description: "Also upload the App Store screenshots (appstore/screenshots, Kurdish set)"
+        type: boolean
+        default: true
 
 jobs:
   appstore:
@@ -90,6 +94,20 @@ jobs:
             -authenticationKeyID "$ASC_KEY_ID" \
             -authenticationKeyIssuerID "$ASC_ISSUER_ID"
           echo "Uploaded build ${{ inputs.version }} (${{ github.run_number }}). It shows in App Store Connect → TestFlight after Apple processes it (5–30 min)."
+
+      - name: Upload screenshots (iPhone 6.9")
+        if: ${{ inputs.screenshots }}
+        run: |
+          mkdir -p "$RUNNER_TEMP/shots/en-US"
+          cp ../appstore/screenshots/ckb-*.png "$RUNNER_TEMP/shots/en-US/"
+          ls "$RUNNER_TEMP/shots/en-US"
+          printf '{"key_id":"%s","issuer_id":"%s","key_filepath":"%s"}' "$ASC_KEY_ID" "$ASC_ISSUER_ID" "$RUNNER_TEMP/keys/AuthKey_$ASC_KEY_ID.p8" > "$RUNNER_TEMP/keys/api_key.json"
+          which fastlane || sudo gem install fastlane --no-document
+          fastlane deliver --api_key_path "$RUNNER_TEMP/keys/api_key.json" \
+            --app_identifier com.mandacafe.menare --app_version "${{ inputs.version }}" --platform ios \
+            --screenshots_path "$RUNNER_TEMP/shots" --overwrite_screenshots true \
+            --skip_binary_upload true --skip_metadata true --skip_app_version_update true \
+            --submit_for_review false --run_precheck_before_submit false --force true
 
       - name: Remove key
         if: always()
