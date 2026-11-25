@@ -543,12 +543,21 @@ function mGmapsLink(){var c=mPos||[CITIES[cityIdx][4],CITIES[cityIdx][5]];el("mG
 function mFetch(c,rad){var key="pt-mq-"+c[0].toFixed(2)+","+c[1].toFixed(2)+"-"+rad,hit=load(key,null);
   if(hit&&hit.t&&Date.now()-hit.t<7*864e5)return Promise.resolve(hit.v);
   var q='[out:json][timeout:25];nwr["amenity"="place_of_worship"]["religion"="muslim"](around:'+rad+','+c[0].toFixed(5)+','+c[1].toFixed(5)+');out center tags 300;';
-  function tryS(i){if(i>=MQ_SRV.length)return Promise.reject(new Error("net"));
-    return fetch(MQ_SRV[i],{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:"data="+encodeURIComponent(q)})
-      .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();}).catch(function(){return tryS(i+1);});}
-  return tryS(0).then(function(j){var v=(j.elements||[]).map(function(e){var t=e.tags||{},la=e.lat!=null?e.lat:(e.center&&e.center.lat),lo=e.lon!=null?e.lon:(e.center&&e.center.lon);
+  var ctrls=[],left=MQ_SRV.length;
+  var race=new Promise(function(ok,no){MQ_SRV.forEach(function(u){var ac=window.AbortController?new AbortController():null;if(ac)ctrls.push(ac);
+    fetch(u,{method:"POST",signal:ac?ac.signal:undefined,headers:{"Content-Type":"application/x-www-form-urlencoded"},body:"data="+encodeURIComponent(q)})
+      .then(function(r){if(!r.ok)throw new Error(r.status);return r.json();}).then(ok,function(){if(--left===0)no(new Error("net"));});});
+    setTimeout(function(){no(new Error("timeout"));},40000);});
+  return race.then(function(j){ctrls.forEach(function(a){try{a.abort()}catch(e){}});return j;}).then(function(j){var v=(j.elements||[]).map(function(e){var t=e.tags||{},la=e.lat!=null?e.lat:(e.center&&e.center.lat),lo=e.lon!=null?e.lon:(e.center&&e.center.lon);
       if(la==null)return null;return{n:t["name:ckb"]||t["name:ku"]||t.name||t["name:ar"]||"",lat:la,lng:lo};}).filter(Boolean);
     save(key,{t:Date.now(),v:v});return v;});}
+var mDB=null;
+function mData(){if(mDB)return mDB;mDB=fetch("data/mosques.json").then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+  .catch(function(){mDB=null;return null;});return mDB;}
+function mInBox(d,c){var b=d&&d.bbox;return b&&c[0]>=b[0]&&c[0]<=b[2]&&c[1]>=b[1]&&c[1]<=b[3];}
+function mNearby(c){return mData().then(function(d){if(!mInBox(d,c))return mFetch(c,2500).then(function(v){return v.length<3?mFetch(c,10000):v;});
+  var dl=0.1,v=[];d.m.forEach(function(x){if(Math.abs(x[0]-c[0])<dl&&Math.abs(x[1]-c[1])<dl*1.25)v.push({lat:x[0],lng:x[1],n:x[2]});});
+  if(!v.length)return mFetch(c,10000);return v;});}
 function mLocate(){return new Promise(function(ok){if(!navigator.geolocation){ok(null);return;}
   navigator.geolocation.getCurrentPosition(function(p){ok([p.coords.latitude,p.coords.longitude]);},function(){ok(null);},{enableHighAccuracy:true,timeout:12000,maximumAge:60000});});}
 function mLoad(useGps){if(mBusy)return;mBusy=true;var b=el("mGps");b.disabled=true;
@@ -556,8 +565,7 @@ function mLoad(useGps){if(mBusy)return;mBusy=true;var b=el("mGps");b.disabled=tr
   (useGps?mLocate():Promise.resolve(null)).then(function(g){
     if(g){mPos=g;mFromGps=true;}else if(!mPos||!mFromGps){mPos=[CITIES[cityIdx][4],CITIES[cityIdx][5]];mFromGps=false;}
     mGmapsLink();el("mState").textContent="گەڕان بۆ مزگەوتەکان...";
-    return mLib().then(function(){mInitMap();return mFetch(mPos,mFromGps?2500:4000);})
-      .then(function(v){return v.length<3?mFetch(mPos,10000):v;})
+    return mLib().then(function(){mInitMap();return mNearby(mPos);})
       .then(function(v){mRender(v);
         el("mState").textContent=(mFromGps?"":(useGps?"شوێنەکەت نەدۆزرایەوە؛ ":"")+"ناوەندی "+CITIES[cityIdx][0]+" بەکارهات. بۆ وردی «شوێنی ئێستام بدۆزەوە» دابگرە.");});
   }).catch(function(){el("mState").textContent="مزگەوتەکان بار نەبوون (ئینتەرنێت؟). دووبارە هەوڵ بدەرەوە یان «لە Google Maps بگەڕێ» بەکاربهێنە.";})
@@ -569,7 +577,7 @@ function mInitMap(){if(mMap){mMap.setView(mPos,15);return;}
 function mRender(v){var p=mPos;v.forEach(function(q){q.d=mDist(p,[q.lat,q.lng]);});v.sort(function(a,b){return a.d-b.d;});
   mLayer.clearLayers();
   if(mFromGps)L.circleMarker(p,{radius:8,color:"#FFFFFF",weight:3,fillColor:"#2F7BF6",fillOpacity:1}).addTo(mLayer).bindPopup('<div class="mpop">شوێنی تۆ</div>');
-  v.forEach(function(q,i){var nm=q.n||"مزگەوت";
+  v.slice(0,150).forEach(function(q,i){var nm=q.n||"مزگەوت";
     L.marker([q.lat,q.lng],{icon:L.divIcon({className:"",html:'<div class="mpin'+(i===0?" near":"")+'">'+MQ_ICON+'</div>',iconSize:[30,30],iconAnchor:[15,30],popupAnchor:[0,-28]}),zIndexOffset:i===0?1000:0})
       .addTo(mLayer).bindPopup('<div class="mpop"><b>'+mEsc(nm)+'</b><br>'+mFmtD(q.d)+'<br><a href="'+mDir(q)+'" target="_blank" rel="noopener">ڕێگا لە Google Maps</a></div>');});
   if(v.length){var n=v[0];el("mNear").hidden=false;el("mNearN").textContent=n.n||"مزگەوت";el("mNearD").textContent=mFmtD(n.d)+(mFromGps?" لە تۆوە":" لە ناوەندی شار");el("mNearGo").href=mDir(n);

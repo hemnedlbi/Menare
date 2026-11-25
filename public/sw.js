@@ -1,4 +1,4 @@
-const CACHE="menare-v12";
+const CACHE="menare-v13";
 const FILES=["./","index.html","manifest.webmanifest","fonts/SarkarAljazeera-Regular.woff2","fonts/SarkarAljazeera-Bold.woff2","fonts/Amiri-Regular.woff2","fonts/Amiri-Bold.woff2",
  "icons/icon-192.png","icons/icon-512.png","icons/maskable-512.png","icons/apple-touch-icon.png","vendor/leaflet/leaflet.js","vendor/leaflet/leaflet.css"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()));});
@@ -7,6 +7,9 @@ self.addEventListener("fetch",e=>{
   if(e.request.method!=="GET")return;
   if(e.request.mode==="navigate"){
     e.respondWith(fetch(e.request).then(r=>{const c=r.clone();caches.open(CACHE).then(x=>x.put("index.html",c));return r;}).catch(()=>caches.match("index.html")));
+    return;}
+  if(e.request.url.indexOf("/data/mosques.json")>=0){
+    e.respondWith(caches.open(CACHE).then(c=>c.match(e.request).then(hit=>{const net=fetch(e.request).then(r=>{if(r.ok)c.put(e.request,r.clone());return r;}).catch(()=>hit||Response.error());return hit||net;})));
     return;}
   e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request)));
 });
