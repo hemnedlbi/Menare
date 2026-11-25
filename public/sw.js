@@ -1,6 +1,6 @@
-const CACHE="menare-v11";
+const CACHE="menare-v12";
 const FILES=["./","index.html","manifest.webmanifest","fonts/SarkarAljazeera-Regular.woff2","fonts/SarkarAljazeera-Bold.woff2","fonts/Amiri-Regular.woff2","fonts/Amiri-Bold.woff2",
- "icons/icon-192.png","icons/icon-512.png","icons/maskable-512.png","icons/apple-touch-icon.png"];
+ "icons/icon-192.png","icons/icon-512.png","icons/maskable-512.png","icons/apple-touch-icon.png","vendor/leaflet/leaflet.js","vendor/leaflet/leaflet.css"];
 self.addEventListener("install",e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()));});
 self.addEventListener("activate",e=>{e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(n=>n!==CACHE).map(n=>caches.delete(n)))).then(()=>self.clients.claim()));});
 self.addEventListener("fetch",e=>{
