@@ -107,7 +107,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/shots/en-US"
           cp ../appstore/screenshots/ckb-*.png "$RUNNER_TEMP/shots/en-US/"
           ls "$RUNNER_TEMP/shots/en-US"
-          printf '{"key_id":"%s","issuer_id":"%s","key_filepath":"%s"}' "$ASC_KEY_ID" "$ASC_ISSUER_ID" "$RUNNER_TEMP/keys/AuthKey_$ASC_KEY_ID.p8" > "$RUNNER_TEMP/keys/api_key.json"
+          python3 -c 'import json,os;k=os.environ["RUNNER_TEMP"]+"/keys/";json.dump({"key_id":os.environ["ASC_KEY_ID"],"issuer_id":os.environ["ASC_ISSUER_ID"],"key":open(k+"AuthKey_"+os.environ["ASC_KEY_ID"]+".p8").read(),"in_house":False},open(k+"api_key.json","w"))'
           which fastlane || sudo gem install fastlane --no-document
           # an empty Deliverfile stops deliver from asking to set itself up
           mkdir -p fastlane && touch fastlane/Deliverfile
