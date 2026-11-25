@@ -15,6 +15,10 @@ on:
         description: "App version shown on the App Store"
         default: "1.0"
         required: true
+      build:
+        description: "Build and upload a new app build"
+        type: boolean
+        default: true
       screenshots:
         description: "Also upload the App Store screenshots (appstore/screenshots, Kurdish set)"
         type: boolean
@@ -68,6 +72,7 @@ jobs:
           printf '%s\n' "$ASC_KEY_P8" > "$RUNNER_TEMP/keys/AuthKey_$ASC_KEY_ID.p8"
 
       - name: Archive (signed automatically by Apple)
+        if: ${{ inputs.build }}
         run: |
           xcodebuild -project ios/App/App.xcodeproj -scheme App \
             -configuration Release -destination 'generic/platform=iOS' \
@@ -84,6 +89,7 @@ jobs:
           test -d build/Menare.xcarchive
 
       - name: Upload to App Store Connect
+        if: ${{ inputs.build }}
         run: |
           xcodebuild -exportArchive \
             -archivePath build/Menare.xcarchive \
@@ -103,6 +109,9 @@ jobs:
           ls "$RUNNER_TEMP/shots/en-US"
           printf '{"key_id":"%s","issuer_id":"%s","key_filepath":"%s"}' "$ASC_KEY_ID" "$ASC_ISSUER_ID" "$RUNNER_TEMP/keys/AuthKey_$ASC_KEY_ID.p8" > "$RUNNER_TEMP/keys/api_key.json"
           which fastlane || sudo gem install fastlane --no-document
+          # an empty Deliverfile stops deliver from asking to set itself up
+          mkdir -p fastlane && touch fastlane/Deliverfile
+          export FASTLANE_SKIP_UPDATE_CHECK=1 CI=true
           fastlane deliver --api_key_path "$RUNNER_TEMP/keys/api_key.json" \
             --app_identifier com.mandacafe.menare --app_version "${{ inputs.version }}" --platform ios \
             --screenshots_path "$RUNNER_TEMP/shots" --overwrite_screenshots true \
