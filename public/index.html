@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>مەنارە - کاتەکانی نوێژی کوردستان</title>
+<title>منارە - کاتەکانی نوێژی کوردستان</title>
 <meta name="description" content="کاتەکانی نوێژ و بانگ بۆ شارەکانی کوردستان">
 <meta name="theme-color" content="#102A55">
 <link rel="manifest" href="manifest.webmanifest">
@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="مەنارە">
+<meta name="apple-mobile-web-app-title" content="منارە">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 </head>
 <body>
@@ -212,7 +212,7 @@ display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px
   <header>
     <img class="appicon" src="icons/icon-192.png" width="60" height="60" alt="" aria-hidden="true">
     <div>
-      <h1>مەنارە</h1>
+      <h1>منارە</h1>
       <p class="sub">کاتەکانی نوێژی کوردستان</p>
     </div>
   </header>
@@ -611,7 +611,7 @@ function doSchedule(){
           var at=Date.UTC(y,m-1,d)+t[key]*60000-TZ*3600e3;if(at<nowT+3000)return;
           list.push({id:id++,title:"🕌 کاتی بانگی "+NAMES[key],body:c[0]+" · "+fmt(t[key],true)+" "+ampm(t[key]),sound:"adhan.wav",schedule:{at:new Date(at)}});last=at;});
       }
-      if(last)list.push({id:id++,title:"مەنارە",body:"ئەپەکە بکەرەوە بۆ ئەوەی کاتەکانی بانگ نوێ بکرێنەوە",schedule:{at:new Date(last+120000)}});
+      if(last)list.push({id:id++,title:"منارە",body:"ئەپەکە بکەرەوە بۆ ئەوەی کاتەکانی بانگ نوێ بکرێنەوە",schedule:{at:new Date(last+120000)}});
       if(!list.length){el("adhanSt").textContent="هیچ بانگێک هەڵنەبژێردراوە";return;}
       return LN("schedule",{notifications:list}).then(function(){el("adhanSt").textContent="✓ "+(list.length-1)+" بانگ ڕێکخراوە · "+c[0];});
     });
