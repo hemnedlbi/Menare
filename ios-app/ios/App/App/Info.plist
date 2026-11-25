@@ -27,7 +27,7 @@
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>بۆ دیاریکردنی ئاراستەی قیبلە لە شوێنی ئێستات.</string>
+	<string>بۆ دیاریکردنی ئاراستەی قیبلە و دۆزینەوەی نزیکترین مزگەوت لە شوێنی ئێستات.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
