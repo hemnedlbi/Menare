@@ -64,5 +64,5 @@ jobs:
         run: |
           gh release delete ios-latest -y --cleanup-tag || true
           gh release create ios-latest Menare.ipa \
-            --title "Menare iOS — build ${{ github.run_number }}" \
-            --notes "Unsigned IPA. Install with AltStore or SideStore. Design & Development Hemn A.Muhammad"
+            --title "مەنارە بۆ ئایفۆن — بیلدی ${{ github.run_number }}" \
+            --notes "ئەپی مەنارە بۆ ئایفۆن (IPA ـی واژۆنەکراو). بە AltStore یان SideStore دایبمەزرێنە. Design & Development Hemn A.Muhammad"
