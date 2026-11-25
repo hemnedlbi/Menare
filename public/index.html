@@ -171,6 +171,15 @@ footer{color:var(--muted);font-size:.78rem;text-align:center;direction:ltr;paddi
 .dcard .dct{flex:1;display:flex;flex-direction:column}
 .dcard b{font-size:1.05rem}
 .dcard span.s{font-size:.82rem;color:var(--muted)}
+.rcard{position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;background:var(--night);color:#FFFFFF;border-radius:20px;padding:16px}
+.rcard .rmoon{width:44px;height:44px;flex:none;color:#E3A72F}
+.rcard .rct{flex:1;display:flex;flex-direction:column;min-width:0}
+.rcard .rct b{font-size:1.05rem}
+.rcard .rct span{font-size:.8rem;color:#D3DCEA;line-height:1.5}
+.rcard .rnum{display:flex;flex-direction:column;align-items:center;flex:none;min-width:64px;padding:6px 10px;border-radius:14px;background:rgba(255,255,255,.08)}
+.rcard .rnum strong{font-size:1.7rem;line-height:1.1;color:#F6CB66;font-variant-numeric:tabular-nums}
+.rcard .rnum small{font-size:.72rem;color:#D3DCEA}
+.rcard[hidden]{display:none}
 .adhan-box{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:14px 16px}
 .adhan-box .ab-t{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .adhan-box #adhanSt{font-size:.82rem;color:var(--muted)}
@@ -213,6 +222,11 @@ footer{color:var(--muted);font-size:.78rem;text-align:center;direction:ltr;paddi
       <button class="btn" id="adhanTest" type="button">تاقیکردنەوەی بانگ (دوای ١٠ چرکە)</button>
     </div>
     <button class="dcard" id="dShort" type="button"><span class="pi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="4.5" r="1.6"/><circle cx="17.3" cy="6.7" r="1.6"/><circle cx="19.5" cy="12" r="1.6"/><circle cx="17.3" cy="17.3" r="1.6"/><circle cx="6.7" cy="6.7" r="1.6"/><circle cx="4.5" cy="12" r="1.6"/><circle cx="6.7" cy="17.3" r="1.6"/><path d="M12 19v3"/></svg></span><span class="dct"><b id="dShortT"></b><span class="s" id="dShortS"></span></span></button>
+    <div class="rcard" id="ramadan" hidden aria-live="polite">
+      <svg class="rmoon" viewBox="0 0 48 48" aria-hidden="true"><path d="M30 6a18 18 0 1 0 12 30A15 15 0 1 1 30 6z" fill="currentColor"/><path d="M36 13l1.2 2.8 2.8 1.2-2.8 1.2L36 21l-1.2-2.8L32 17l2.8-1.2z" fill="#FFFFFF"/></svg>
+      <div class="rct"><b id="rT"></b><span id="rS"></span></div>
+      <div class="rnum"><strong id="rN"></strong><small id="rU"></small></div>
+    </div>
   </section>
 
   <section id="p-adhkar" hidden>
@@ -377,7 +391,7 @@ function renderToday(){var n=kNow(),c=CITIES[cityIdx],t=times(n.y,n.m,n.d,c),nk=
     return '<li class="'+cls+'"><span class="pi">'+ICONS[k]+'</span><span><span class="pn" style="display:block">'+NAMES[k]+'</span>'+(sub?'<span class="ps">'+sub+'</span>':'')+'</span><span class="pt">'+fmt(t[k])+'</span>'+bell+'</li>'}).join("");
   el("tSrc").innerHTML=srcHTML(c);
   var h=hijri();
-  el("todayDate").textContent=n.d+"ی "+MONTHS[n.m-1]+" "+n.y+(h?" · "+h:"");}
+  el("todayDate").textContent=n.d+"ی "+MONTHS[n.m-1]+" "+n.y+(h?" · "+h:"");renderRamadan();}
 function nextKey(n,t){var order=TKEYS,s=n.min*60+n.sec;
   for(var i=0;i<order.length;i++){if(t[order[i]]*60>s)return{key:order[i],at:t[order[i]],prev:i>0?t[order[i-1]]:t.isha-1440,tomorrow:false};}
   var tm=new Date(Date.UTC(n.y,n.m-1,n.d+1)),tt=times(tm.getUTCFullYear(),tm.getUTCMonth()+1,tm.getUTCDate(),CITIES[cityIdx]);return{key:"fajr",at:tt.fajr+1440,prev:t.isha,tomorrow:true};}
@@ -404,6 +418,23 @@ function dState(mode){var it=dItems(mode),s=load(dKey(mode),null);if(!s||s.lengt
 function autoMode(){var n=kNow(),t=times(n.y,n.m,n.d,CITIES[cityIdx]);return (n.min>=t.fajr&&n.min<t.asr)?"m":"e";}
 var dMode=autoMode();
 function dSum(mode){var it=dItems(mode),s=dState(mode),tot=0,left=0;it.forEach(function(a,i){tot+=a[3];left+=s[i];});return{done:tot-left,tot:tot,items:it.length,itemsDone:s.filter(function(x){return x===0}).length};}
+// Ramadan countdown (Umm al-Qura calendar; the official start can differ by a day after moon sighting)
+var WDAYS=["یەکشەممە","دووشەممە","سێشەممە","چوارشەممە","پێنجشەممە","هەینی","شەممە"];
+var HFMT=null;try{HFMT=new Intl.DateTimeFormat("en-u-ca-islamic-umalqura-nu-latn",{day:"numeric",month:"numeric",year:"numeric",timeZone:"UTC"});}catch(e){}
+function hParts(d){var p={};HFMT.formatToParts(d).forEach(function(x){p[x.type]=x.value});return{d:parseInt(p.day,10),m:parseInt(p.month,10),y:parseInt(p.year,10)};}
+var ramKey="",ramInfo=null;
+function ramCalc(n){if(!HFMT)return null;var base=Date.UTC(n.y,n.m-1,n.d),h=hParts(new Date(base));if(!h.m)return null;
+  if(h.m===9){for(var k=1;k<32;k++){var e=hParts(new Date(base+k*864e5));if(e.m===10)return{inR:true,day:h.d,left:k,y:h.y};}return null;}
+  for(var i=1;i<400;i++){var dt=new Date(base+i*864e5),q=hParts(dt);if(q.m===9&&q.d===1)return{inR:false,left:i,date:dt,y:q.y};}
+  return null;}
+function renderRamadan(){var n=kNow(),key=n.y+"-"+n.m+"-"+n.d;if(key!==ramKey){ramKey=key;try{ramInfo=ramCalc(n);}catch(e){ramInfo=null;}}
+  var box=el("ramadan"),r=ramInfo;if(!r){box.hidden=true;return;}box.hidden=false;
+  if(r.inR){el("rT").textContent="ڕۆژی "+r.day+"ی ڕەمەزان";
+    el("rS").textContent=r.left===1?"سبەینێ جەژنی ڕەمەزانە (نزیکەی)":"ڕەمەزانت پیرۆز بێت · جەژن نزیکەی "+r.left+" ڕۆژی ماوە";
+    el("rN").textContent=r.left;el("rU").textContent="ڕۆژ بۆ جەژن";return;}
+  var d=r.date;el("rT").textContent=r.left===1?"سبەینێ ڕەمەزانە":"مانگی پیرۆزی ڕەمەزان";
+  el("rS").textContent="یەکەم ڕۆژ نزیکەی "+WDAYS[d.getUTCDay()]+" "+d.getUTCDate()+"ی "+MONTHS[d.getUTCMonth()]+" "+d.getUTCFullYear()+" · بە پێی بینینی مانگ";
+  el("rN").textContent=r.left;el("rU").textContent=r.left===1?"ڕۆژ ماوە":"ڕۆژ ماوە";}
 function renderShort(){var m=autoMode(),s=dSum(m);el("dShortT").textContent=m==="m"?"زیکرەکانی بەیانیان":"زیکرەکانی ئێواران";
   el("dShortS").textContent=s.itemsDone===s.items?"هەمووی خوێندرایەوە":(s.itemsDone+" لە "+s.items+" خوێندراوە");}
 function arN(n){return String(n).replace(/\d/g,function(d){return "٠١٢٣٤٥٦٧٨٩"[d];});}
