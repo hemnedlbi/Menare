@@ -561,7 +561,9 @@ el("qGps").addEventListener("click",function(){var b=this;if(!navigator.geolocat
 function qShow(){qRender();}
 function renderAll(){lastKey="";if(!qPos&&view==="qibla")qRender();renderToday();renderMonth();renderShort();tick();}
 /* ---- Nearby mosques: OpenStreetMap (Overpass) + Leaflet, directions open in Google Maps ---- */
-var MQ_SRV=["https://overpass-api.de/api/interpreter","https://overpass.private.coffee/api/interpreter"];
+var MQ_SRV=["https://overpass-api.de/api/interpreter","https://overpass.private.coffee/api/interpreter","https://overpass.kumi.systems/api/interpreter"];
+/* the mosque list is rebuilt every week on the website; the app downloads it (no Overpass needed) */
+var MQ_REMOTE="https://menare.mandacafe.com/data/mosques.json";
 var mMap=null,mLayer=null,mPos=null,mFromGps=false,mBusy=false,mAsked=false,mLibP=null;
 var MQ_ICON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16"/><path d="M6.5 20v-5a5.5 5.5 0 0 1 11 0v5"/><path d="M12 9.5V6"/></svg>';
 function mLib(){if(window.L)return Promise.resolve();if(mLibP)return mLibP;
@@ -584,8 +586,16 @@ function mFetch(c,rad){var key="pt-mq-"+c[0].toFixed(2)+","+c[1].toFixed(2)+"-"+
       if(la==null)return null;return{n:t["name:ckb"]||t["name:ku"]||t.name||t["name:ar"]||"",lat:la,lng:lo};}).filter(Boolean);
     save(key,{t:Date.now(),v:v});return v;});}
 var mDB=null;
-function mData(){if(mDB)return mDB;mDB=fetch("data/mosques.json").then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
-  .catch(function(){mDB=null;return null;});return mDB;}
+function mGet(u,ms){var ac=window.AbortController?new AbortController():null,t=setTimeout(function(){if(ac)ac.abort();},ms);
+  return fetch(u,{signal:ac?ac.signal:undefined,cache:"no-cache"}).then(function(r){clearTimeout(t);if(!r.ok)throw new Error(r.status);return r.json();});}
+/* newest of: the copy inside the app, the website's weekly copy, the last downloaded copy */
+function mData(){if(mDB)return mDB;
+  var here=mGet("data/mosques.json",6000).catch(function(){return null;});
+  var web=location.hostname==="menare.mandacafe.com"?Promise.resolve(null)
+    :mGet(MQ_REMOTE,9000).then(function(d){if(d&&d.m&&d.m.length)save("pt-mqdb",d);return d;}).catch(function(){return load("pt-mqdb",null);});
+  mDB=Promise.all([here,web]).then(function(a){var x=a[0]&&a[0].m?a[0]:null,y=a[1]&&a[1].m?a[1]:null;
+    var d=x&&y?((y.updated||"")>(x.updated||"")?y:x):(x||y);if(!d)mDB=null;return d;});
+  return mDB;}
 function mInBox(d,c){var b=d&&d.bbox;return b&&c[0]>=b[0]&&c[0]<=b[2]&&c[1]>=b[1]&&c[1]<=b[3];}
 function mNearby(c){return mData().then(function(d){if(!mInBox(d,c))return mFetch(c,2500).then(function(v){return v.length<3?mFetch(c,10000):v;});
   var dl=0.1,v=[];d.m.forEach(function(x){if(Math.abs(x[0]-c[0])<dl&&Math.abs(x[1]-c[1])<dl*1.25)v.push({lat:x[0],lng:x[1],n:x[2]});});

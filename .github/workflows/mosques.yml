@@ -1,0 +1,40 @@
+name: Mosques data (OpenStreetMap)
+
+# Every Friday, and on demand: all mosques in the Kurdistan Region from an OpenStreetMap
+# extract (Geofabrik, no Overpass server needed) -> public/data/mosques.json on main.
+# The website gets it at once; the iPhone app downloads it from the website too.
+on:
+  schedule:
+    - cron: '23 2 * * 5'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: osmium
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq osmium-tool
+      - name: Download Iraq extract
+        run: curl -fsSL --retry 3 -o iraq.osm.pbf https://download.geofabrik.de/asia/iraq-latest.osm.pbf
+      - name: Places of worship in Kurdistan
+        run: |
+          osmium extract -b 42.3,34.3,46.3,37.4 iraq.osm.pbf -o krd.osm.pbf --overwrite
+          osmium tags-filter krd.osm.pbf nwr/amenity=place_of_worship nwr/building=mosque -o pow.osm.pbf --overwrite
+          osmium export pow.osm.pbf -f geojsonseq -o pow.geojsonseq --overwrite --geometry-types=point,linestring,polygon
+      - name: mosques.json
+        run: |
+          mkdir -p public/data
+          python3 .github/scripts/mosques.py pow.geojsonseq public/data/mosques.json
+          test "$(python3 -c "import json;print(len(json.load(open('public/data/mosques.json'))['m']))")" -gt 200
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/mosques.json
+          if git diff --cached --quiet; then echo "no change"; exit 0; fi
+          git commit -m "Mosques data from OpenStreetMap ($(date -u +%F))"
+          git push
