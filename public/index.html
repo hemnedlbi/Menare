@@ -604,9 +604,17 @@ function mLoad(useGps){if(mBusy)return;mBusy=true;var b=el("mGps");b.disabled=tr
   .then(function(){mBusy=false;b.disabled=false;});}
 function mInitMap(){if(mMap){mMap.setView(mPos,15);return;}
   mMap=L.map("mMap",{zoomControl:true,attributionControl:true}).setView(mPos,15);
-  /* inside the iPhone app pages have no web Referer, which OSM tiles require; use CARTO's OSM tiles there */
-  if(NATIVE)L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png",{maxZoom:19,subdomains:"abcd",attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions" target="_blank" rel="noopener">CARTO</a>'}).addTo(mMap);
-  else L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'}).addTo(mMap);
+  var OSMA='&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>';
+  /* inside the iPhone app the page has no web Referer, which OSM tiles require (and CARTO now needs an API key),
+     so the app loads OSM tiles natively (CapacitorHttp) with its own User-Agent and Referer */
+  if(NATIVE){var NTiles=L.TileLayer.extend({createTile:function(c,done){var img=document.createElement("img");img.alt="";img.setAttribute("role","presentation");
+      CAPN.nativePromise("CapacitorHttp","get",{url:"https://tile.openstreetmap.org/"+c.z+"/"+c.x+"/"+c.y+".png",responseType:"blob",
+        headers:{"User-Agent":"Menare/1.0 (iOS app; https://menare.mandacafe.com)","Referer":"https://menare.mandacafe.com/"}})
+        .then(function(r){if(!r||r.status!==200||!r.data)throw 0;img.onload=function(){done(null,img);};img.onerror=function(){done(1,img);};img.src="data:image/png;base64,"+r.data;})
+        .catch(function(){done(1,img);});
+      return img;}});
+    new NTiles("",{maxZoom:19,attribution:OSMA}).addTo(mMap);}
+  else L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:19,attribution:OSMA}).addTo(mMap);
   mLayer=L.layerGroup().addTo(mMap);}
 function mRender(v){var p=mPos;v.forEach(function(q){q.d=mDist(p,[q.lat,q.lng]);});v.sort(function(a,b){return a.d-b.d;});
   mLayer.clearLayers();
