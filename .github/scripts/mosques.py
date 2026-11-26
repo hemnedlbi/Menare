@@ -26,6 +26,19 @@ def centre(g):
     walk(c)
     return sum(p[1] for p in pts) / len(pts), sum(p[0] for p in pts) / len(pts)
 
+def dedupe(rows):
+    """One marker per mosque: same name within 150 m, or an unnamed point within 40 m of another."""
+    import math
+    def m(a, b):
+        return math.hypot((a[0] - b[0]) * 111320, (a[1] - b[1]) * 111320 * math.cos(math.radians(a[0])))
+    key = lambda n: n.replace("\u200c", "").replace(" ", "").replace("ه", "ە")
+    kept = []
+    for r in sorted(rows, key=lambda r: (r[2] == "", r)):          # named first
+        if any((r[2] and k[2] and key(r[2]) == key(k[2]) and m(r, k) < 150) or (not r[2] and m(r, k) < 40) for k in kept):
+            continue
+        kept.append(r)
+    return kept
+
 out, seen = [], set()
 with open(SRC, encoding="utf-8") as f:
     for line in f:
@@ -53,6 +66,7 @@ with open(SRC, encoding="utf-8") as f:
         seen.add(k)
         out.append([round(lat, 6), round(lon, 6), name.strip()])
 
+out = dedupe(out)
 out.sort()
 data = {
     "updated": datetime.date.today().isoformat(),
