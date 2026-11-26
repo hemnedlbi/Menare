@@ -63,3 +63,4 @@ data = {
 with open(DST, "w", encoding="utf-8") as f:
     json.dump(data, f, ensure_ascii=False, separators=(",", ":"))
 print(f"{len(out)} mosques -> {DST}")
+

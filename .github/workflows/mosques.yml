@@ -7,6 +7,9 @@ on:
   schedule:
     - cron: '23 2 * * 5'
   workflow_dispatch:
+  push:   # first build of the data on the pull-request branch (removed after)
+    branches: [feat/mosques-data]
+    paths: ['.github/scripts/mosques.py']
 
 permissions:
   contents: write
